@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>扫码平台（序列号 + UPC + 每日总汇 + 可展开明细）</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+  <div class="max-w-7xl mx-auto p-4 md:p-6">
+    <h1 class="text-2xl md:text-3xl font-bold mb-4">
+      📦 扫码平台 <span class="text-sm text-gray-500 font-normal">（序列号 + UPC + 每日总汇 + 明细）</span>
+    </h1>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- 扫码录入 -->
+      <section class="bg-white rounded-2xl shadow-sm p-4 md:p-6">
+        <h2 class="text-lg font-semibold mb-2">扫码录入</h2>
+        <div class="space-y-2">
+          <input id="upc" class="border rounded w-full p-2" placeholder="UPC（可重复）" />
+          <input id="sn" class="border rounded w-full p-2" placeholder="序列号（唯一）" />
+          <input id="device" class="border rounded w-full p-2" placeholder="设备 Device" />
+          <input id="capacity" class="border rounded w-full p-2" placeholder="容量 Capacity" />
+          <input id="color" class="border rounded w-full p-2" placeholder="颜色 Color" />
+          <button id="addScan" class="px-4 py-2 bg-blue-600 text-white rounded">录入</button>
+        </div>
+      </section>
+
+      <!-- 运单登记 -->
+      <section class="bg-white rounded-2xl shadow-sm p-4 md:p-6">
+        <h2 class="text-lg font-semibold mb-2">运单登记</h2>
+        <div class="space-y-2">
+          <input id="awbCode" class="border rounded w-full p-2" placeholder="运单号（必填）" />
+          <input id="awbCarrier" class="border rounded w-full p-2" placeholder="物流公司（可选）" />
+          <input id="awbDate" type="date" class="border rounded w-full p-2" />
+          <button id="addAwb" class="px-4 py-2 bg-green-600 text-white rounded">登记运单</button>
+        </div>
+        <div class="mt-4">
+          <h3 class="font-semibold mb-1">已登记运单</h3>
+          <div id="awbList" class="text-sm space-y-1"></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 每日总汇 -->
+    <section class="bg-white rounded-2xl shadow-sm p-4 md:p-6 mt-6">
+      <h2 class="text-lg font-semibold mb-2">📅 每日总汇（可展开明细）</h2>
+      <div id="dailySummary" class="space-y-2 text-sm"></div>
+    </section>
+  </div>
+
+<script>
+  const scans = JSON.parse(localStorage.getItem('scans_v1') || '[]');
+  const awbs = JSON.parse(localStorage.getItem('awbs_v1') || '[]');
+  const dailySummary = document.getElementById('dailySummary');
+  const awbList = document.getElementById('awbList');
+
+  function renderAll() {
+    // 渲染运单列表
+    awbList.innerHTML = awbs.map(a => `<div>${a.date} · ${a.code} <span class='text-gray-500'>${a.carrier||''}</span></div>`).join('');
+
+    // 整理每日汇总
+    const summary = {};
+    for (const s of scans) {
+      const d = s.time.split(' ')[0];
+      if (!summary[d]) summary[d] = { scan: [], awb: [] };
+      summary[d].scan.push(s);
+    }
+    for (const a of awbs) {
+      const d = a.date || new Date().toISOString().slice(0,10);
+      if (!summary[d]) summary[d] = { scan: [], awb: [] };
+      summary[d].awb.push(a);
+    }
+
+    // 生成每日卡片（可展开）
+    const sorted = Object.entries(summary).sort((a,b)=>b[0].localeCompare(a[0]));
+    dailySummary.innerHTML = sorted.map(([d,v]) => `
+      <details class='border rounded-lg bg-gray-50'>
+        <summary class='p-2 flex justify-between cursor-pointer'>
+          <div>${d}</div>
+          <div>扫码：<strong>${v.scan.length}</strong> ｜ 运单：<strong>${v.awb.length}</strong></div>
+        </summary>
+        <div class='p-3 bg-white border-t'>
+          <h4 class='font-semibold text-sm mb-1'>📋 扫描明细 (${v.scan.length} 条)</h4>
+          <table class='w-full text-xs border mb-3'>
+            <thead class='bg-gray-100'>
+              <tr>
+                <th class='border p-1'>时间</th>
+                <th class='border p-1'>UPC</th>
+                <th class='border p-1'>序列号</th>
+                <th class='border p-1'>设备</th>
+                <th class='border p-1'>容量</th>
+                <th class='border p-1'>颜色</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${v.scan.map(s => `<tr><td class='border p-1'>${s.time}</td><td class='border p-1'>${s.upc}</td><td class='border p-1'>${s.sn}</td><td class='border p-1'>${s.device}</td><td class='border p-1'>${s.capacity}</td><td class='border p-1'>${s.color}</td></tr>`).join('')}
+            </tbody>
+          </table>
+          <h4 class='font-semibold text-sm mb-1'>🧾 运单明细 (${v.awb.length} 单)</h4>
+          <ul class='list-disc list-inside text-xs'>
+            ${v.awb.map(a => `<li>${a.code} ${a.carrier? '· '+a.carrier:''}</li>`).join('')}
+          </ul>
+        </div>
+      </details>`).join('');
+  }
+
+  document.getElementById('addScan').onclick = () => {
+    const upc = document.getElementById('upc').value.trim();
+    const sn = document.getElementById('sn').value.trim();
+    if (!upc && !sn) return alert('请输入UPC或序列号');
+    if (sn && scans.some(r => r.sn === sn)) return alert('序列号已存在');
+    scans.push({
+      time: new Date().toLocaleString('zh-CN',{hour12:false}),
+      upc, sn,
+      device: document.getElementById('device').value.trim(),
+      capacity: document.getElementById('capacity').value.trim(),
+      color: document.getElementById('color').value.trim()
+    });
+    localStorage.setItem('scans_v1', JSON.stringify(scans));
+    renderAll();
+  };
+
+  document.getElementById('addAwb').onclick = () => {
+    const code = document.getElementById('awbCode').value.trim();
+    if (!code) return alert('请输入运单号');
+    const carrier = document.getElementById('awbCarrier').value.trim();
+    const date = document.getElementById('awbDate').value || new Date().toISOString().slice(0,10);
+    awbs.push({ code, carrier, date });
+    localStorage.setItem('awbs_v1', JSON.stringify(awbs));
+    renderAll();
+  };
+
+  renderAll();
+</script>
+</body>
+</html>
