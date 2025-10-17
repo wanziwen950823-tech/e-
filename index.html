@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>扫码平台 · Apple 优化（摄像扫码 + 手动 + 自动识别 + 运单 + 每日总汇 + SKU 管理）</title>
+  <title>扫码平台 · Apple 优化（摄像扫码 + 自动识别 + 运单 + 总汇 + SKU 管理）</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- ZXing 扫码库（支持 UPC/EAN/Code128 等常见苹果外包装条码） -->
+  <!-- ZXing 扫码库 -->
   <script src="https://unpkg.com/@zxing/library@0.21.3"></script>
   <style>
     .kbd{padding:.125rem .375rem;border-radius:.25rem;background:#f3f4f6;border:1px solid #e5e7eb;font-size:.75rem;font-family:ui-monospace,Menlo,monospace}
@@ -19,13 +19,11 @@
     <header class="flex items-center justify-between gap-4 mb-3">
       <h1 class="text-2xl md:text-3xl font-bold flex items-center gap-2">
         <span>📦 扫码平台</span>
-        <span class="text-sm text-gray-500 font-normal">（Apple 优化：摄像扫码 + 自动识别 + 运单 + 每日总汇 + SKU 管理）</span>
+        <span class="text-sm text-gray-500 font-normal">（Apple：摄像扫码 + 自动识别 + 运单 + 总汇 + SKU 管理）</span>
       </h1>
       <div class="hidden md:flex gap-3 text-sm text-gray-600">
         <span><span class="kbd">Space</span> 开/关扫码</span>
-        <span><span class="kbd">U</span> UPC</span>
-        <span><span class="kbd">S</span> 序列号</span>
-        <span><span class="kbd">Enter</span> 录入</span>
+        <span><span class="kbd">Enter</span> 自动录入</span>
       </div>
     </header>
 
@@ -37,6 +35,10 @@
           <div class="ml-auto flex items-center gap-2 text-sm">
             <label class="text-gray-600">摄像头：</label>
             <select id="cameraSelect" class="border rounded-lg px-2 py-1"></select>
+            <label class="flex items-center gap-1 text-gray-700">
+              <input id="autoSubmit" type="checkbox" class="accent-emerald-600" checked>
+              扫到后自动录入
+            </label>
             <button id="btnToggle" class="rounded-lg px-3 py-2 bg-green-600 text-white">▶ 开始扫码</button>
           </div>
         </div>
@@ -48,7 +50,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
           <div>
             <label class="text-sm text-gray-600">UPC（可重复）</label>
-            <input id="upc" class="border rounded w-full p-2" placeholder="扫码/输入条码数字（Apple 外包装 UPC/EAN 皆可）" />
+            <input id="upc" class="border rounded w-full p-2" placeholder="扫码/输入条码数字（Apple 外包装 UPC/EAN/Code128 支持）" />
           </div>
           <div>
             <label class="text-sm text-gray-600">序列号（唯一）</label>
@@ -158,6 +160,7 @@
     cameraSelect: document.getElementById('cameraSelect'),
     preview: document.getElementById('preview'),
     btnToggle: document.getElementById('btnToggle'),
+    autoSubmit: document.getElementById('autoSubmit'),
     status: document.getElementById('status'),
     upc: document.getElementById('upc'),
     sn: document.getElementById('sn'),
@@ -254,7 +257,7 @@
   function renderAll(){ renderAWB(); renderDaily(); renderSKU(); }
 
   // ====== CSV ======
-  function csvEscape(s){ s = String(s ?? ''); return (/[,"\n]/.test(s)) ? '"'+s.replace(/"/g,'""')+'"' : s; }
+  function csvEscape(s){ s = String(s ?? ''); return (/[,\"\n]/.test(s)) ? '"'+s.replace(/\"/g,'""')+'"' : s; }
   function exportScansCSV(){
     const header = ['Time','UPC','Serial','Device','Capacity','Color'];
     const lines = [header.join(',')];
@@ -269,7 +272,7 @@
     const blob = new Blob(["\uFEFF"+lines.join('\n')], {type:'text/csv;charset=utf-8;'});
     const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`SKU_Map_${Date.now()}.csv`; a.click(); URL.revokeObjectURL(url);
   }
-  function parseCSVLine(line){ const out=[]; let cur=''; let inQ=false; for(let i=0;i<line.length;i++){ const ch=line[i]; if(inQ){ if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else inQ=false; } else cur+=ch; } else { if(ch==='"') inQ=true; else if(ch===','){ out.push(cur); cur=''; } else cur+=ch; } } out.push(cur); return out; }
+  function parseCSVLine(line){ const out=[]; let cur=''; let inQ=false; for(let i=0;i<line.length;i++){ const ch=line[i]; if(inQ){ if(ch=='"'){ if(line[i+1]=='"'){cur+='"';i++;} else inQ=false; } else cur+=ch; } else { if(ch=='"') inQ=true; else if(ch==','){ out.push(cur); cur=''; } else cur+=ch; } } out.push(cur); return out; }
   function importSkuCSV(file){ const reader=new FileReader(); reader.onload=e=>{ const text=e.target.result; const lines=text.split(/\r?\n/).filter(Boolean); const start = /^upc(,|$)/i.test(lines[0])?1:0; for(let i=start;i<lines.length;i++){ const c=parseCSVLine(lines[i]); const u=(c[0]||'').trim(); if(!u) continue; sku[u]={device:(c[1]||'').trim(), capacity:(c[2]||'').trim(), color:(c[3]||'').trim()}; } DB.save(DB.skuKey, sku); renderSKU(); setStatus('SKU CSV 导入完成'); }; reader.readAsText(file,'utf-8'); }
 
   // ====== 逻辑：根据 UPC 自动回填 ======
@@ -283,7 +286,7 @@
     if (sn && scans.some(r=>r.sn===sn)) { setStatus('序列号已存在，禁止重复', false); return; }
     const row = { time: nowStr(), upc, sn, device: els.device.value.trim(), capacity: els.capacity.value.trim(), color: els.color.value.trim() };
     scans.push(row); DB.save(DB.scansKey, scans); setStatus('已录入');
-    els.upc.value=''; els.sn.value=''; // 保持回填字段以便批量录入时复用
+    els.upc.value=''; els.sn.value=''; // 保留回填字段，便于批量录入
     renderDaily();
   }
 
@@ -295,9 +298,11 @@
   }
 
   // ====== 摄像扫码（ZXing） ======
-  const { BrowserMultiFormatReader, NotFoundException } = ZXing; let codeReader=null, selectedDeviceId=null, scanning=false; let mode='UPC';
+  const { BrowserMultiFormatReader, NotFoundException } = ZXing; let codeReader=null, selectedDeviceId=null, scanning=false;
   async function listCameras(){ try { const devices=await BrowserMultiFormatReader.listVideoInputDevices(); els.cameraSelect.innerHTML=''; devices.forEach((d,i)=>{ const opt=document.createElement('option'); opt.value=d.deviceId; opt.textContent=d.label || `摄像头 ${i+1}`; els.cameraSelect.appendChild(opt); }); if(devices[0]) selectedDeviceId=devices[0].deviceId; } catch(e){ setStatus('无法获取摄像头列表', false); } }
-  async function startScan(){ if(scanning) return; if(!selectedDeviceId) await listCameras(); codeReader=new BrowserMultiFormatReader(); try{ scanning=true; els.btnToggle.textContent='⏹ 停止扫码'; await codeReader.decodeFromVideoDevice(selectedDeviceId, els.preview, (result, err)=>{ if(result){ const text=result.getText().trim(); els.upc.value=text; autofillFromUPC(text); flashOverlay(); setStatus('扫码成功'); } else if (err && !(err instanceof NotFoundException)){ console.warn(err); } }); } catch(err){ setStatus('启动摄像头失败：'+err.message, false); scanning=false; els.btnToggle.textContent='▶ 开始扫码'; } }
+  async function startScan(){ if(scanning) return; if(!selectedDeviceId) await listCameras(); codeReader=new BrowserMultiFormatReader(); try{ scanning=true; els.btnToggle.textContent='⏹ 停止扫码'; await codeReader.decodeFromVideoDevice(selectedDeviceId, els.preview, (result, err)=>{ if(result){ const text=result.getText().trim(); els.upc.value=text; autofillFromUPC(text); flashOverlay(); setStatus('扫码成功'); if(els.autoSubmit.checked){ // 扫到后自动录入
+            setTimeout(()=>{ addScan(); }, 150);
+          } } else if (err && !(err instanceof NotFoundException)){ console.warn(err); } }); } catch(err){ setStatus('启动摄像头失败：'+err.message, false); scanning=false; els.btnToggle.textContent='▶ 开始扫码'; } }
   async function stopScan(){ if(!scanning) return; try{ await codeReader.reset(); }catch{} scanning=false; els.btnToggle.textContent='▶ 开始扫码'; }
   function flashOverlay(){ const ov=document.getElementById('overlay'); ov.style.borderColor='rgba(16,185,129,1)'; setTimeout(()=> ov.style.borderColor='rgba(255,255,255,0.9)',180); }
 
@@ -318,7 +323,15 @@
   els.skuImportBtn.addEventListener('click', ()=> els.skuFile.click());
   els.skuFile.addEventListener('change', e=> e.target.files[0] && importSkuCSV(e.target.files[0]));
 
-  document.addEventListener('keydown', (e)=>{ if(e.key===' '){ e.preventDefault(); scanning?stopScan():startScan(); } else if(e.key==='Enter'){ addScan(); } });
+  // 键盘：Enter 自动录入；Space 开关扫码（适配扫码枪回车）
+  document.addEventListener('keydown', (e)=> {
+    if (e.key === ' ') { e.preventDefault(); scanning?stopScan():startScan(); }
+    else if (e.key === 'Enter') {
+      const upc = els.upc.value.trim();
+      const sn  = els.sn.value.trim();
+      if (upc || sn) { addScan(); e.preventDefault(); }
+    }
+  });
 
   // ====== 初始化 ======
   (async function init(){ await listCameras(); renderAll(); setStatus('就绪'); })();
