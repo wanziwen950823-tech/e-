@@ -3,135 +3,326 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>扫码平台（序列号 + UPC + 每日总汇 + 可展开明细）</title>
+  <title>扫码平台 · Apple 优化（摄像扫码 + 手动 + 自动识别 + 运单 + 每日总汇 + SKU 管理）</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- ZXing 扫码库（支持 UPC/EAN/Code128 等常见苹果外包装条码） -->
+  <script src="https://unpkg.com/@zxing/library@0.21.3"></script>
+  <style>
+    .kbd{padding:.125rem .375rem;border-radius:.25rem;background:#f3f4f6;border:1px solid #e5e7eb;font-size:.75rem;font-family:ui-monospace,Menlo,monospace}
+    #videoWrapper{position:relative}
+    #overlay{position:absolute;inset:0;pointer-events:none;border:2px dashed rgba(255,255,255,.9);border-radius:1rem;margin:6%;box-shadow:0 0 0 9999px rgba(0,0,0,.35)}
+    details>summary::-webkit-details-marker{display:none}
+  </style>
 </head>
 <body class="min-h-screen bg-gray-50 text-gray-900">
   <div class="max-w-7xl mx-auto p-4 md:p-6">
-    <h1 class="text-2xl md:text-3xl font-bold mb-4">
-      📦 扫码平台 <span class="text-sm text-gray-500 font-normal">（序列号 + UPC + 每日总汇 + 明细）</span>
-    </h1>
+    <header class="flex items-center justify-between gap-4 mb-3">
+      <h1 class="text-2xl md:text-3xl font-bold flex items-center gap-2">
+        <span>📦 扫码平台</span>
+        <span class="text-sm text-gray-500 font-normal">（Apple 优化：摄像扫码 + 自动识别 + 运单 + 每日总汇 + SKU 管理）</span>
+      </h1>
+      <div class="hidden md:flex gap-3 text-sm text-gray-600">
+        <span><span class="kbd">Space</span> 开/关扫码</span>
+        <span><span class="kbd">U</span> UPC</span>
+        <span><span class="kbd">S</span> 序列号</span>
+        <span><span class="kbd">Enter</span> 录入</span>
+      </div>
+    </header>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <!-- 扫码录入 -->
-      <section class="bg-white rounded-2xl shadow-sm p-4 md:p-6">
-        <h2 class="text-lg font-semibold mb-2">扫码录入</h2>
-        <div class="space-y-2">
-          <input id="upc" class="border rounded w-full p-2" placeholder="UPC（可重复）" />
-          <input id="sn" class="border rounded w-full p-2" placeholder="序列号（唯一）" />
-          <input id="device" class="border rounded w-full p-2" placeholder="设备 Device" />
-          <input id="capacity" class="border rounded w-full p-2" placeholder="容量 Capacity" />
-          <input id="color" class="border rounded w-full p-2" placeholder="颜色 Color" />
-          <button id="addScan" class="px-4 py-2 bg-blue-600 text-white rounded">录入</button>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <!-- 左：扫码录入（含摄像扫码） -->
+      <section class="xl:col-span-2 bg-white rounded-2xl shadow-sm p-4 md:p-6">
+        <div class="flex flex-wrap items-center gap-3">
+          <h2 class="text-lg font-semibold">扫码录入</h2>
+          <div class="ml-auto flex items-center gap-2 text-sm">
+            <label class="text-gray-600">摄像头：</label>
+            <select id="cameraSelect" class="border rounded-lg px-2 py-1"></select>
+            <button id="btnToggle" class="rounded-lg px-3 py-2 bg-green-600 text-white">▶ 开始扫码</button>
+          </div>
+        </div>
+        <div id="videoWrapper" class="rounded-2xl overflow-hidden bg-black mt-3">
+          <video id="preview" class="w-full h-[40vh] object-cover" muted playsinline></video>
+          <div id="overlay"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+          <div>
+            <label class="text-sm text-gray-600">UPC（可重复）</label>
+            <input id="upc" class="border rounded w-full p-2" placeholder="扫码/输入条码数字（Apple 外包装 UPC/EAN 皆可）" />
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">序列号（唯一）</label>
+            <input id="sn" class="border rounded w-full p-2" placeholder="扫描枪/手动输入序列号" />
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+          <input id="device" class="border rounded w-full p-2" placeholder="设备 Device（自动回填，可改）" />
+          <input id="capacity" class="border rounded w-full p-2" placeholder="容量 Capacity（自动回填，可改）" />
+          <input id="color" class="border rounded w-full p-2" placeholder="颜色 Color（自动回填，可改）" />
+        </div>
+        <div class="flex flex-wrap items-center gap-3 mt-3">
+          <button id="addScan" class="px-4 py-2 bg-blue-600 text-white rounded">录入（Enter）</button>
+          <button id="exportCSV" class="px-3 py-2 bg-emerald-600 text-white rounded">导出扫码 CSV</button>
+          <span class="ml-auto text-sm text-gray-600">状态：<span id="status" class="font-semibold">就绪</span></span>
         </div>
       </section>
 
-      <!-- 运单登记 -->
-      <section class="bg-white rounded-2xl shadow-sm p-4 md:p-6">
-        <h2 class="text-lg font-semibold mb-2">运单登记</h2>
+      <!-- 右：运单登记 -->
+      <aside class="bg-white rounded-2xl shadow-sm p-4 md:p-6">
+        <h2 class="text-lg font-semibold mb-2">🧾 运单登记</h2>
         <div class="space-y-2">
           <input id="awbCode" class="border rounded w-full p-2" placeholder="运单号（必填）" />
           <input id="awbCarrier" class="border rounded w-full p-2" placeholder="物流公司（可选）" />
           <input id="awbDate" type="date" class="border rounded w-full p-2" />
+          <input id="awbNote" class="border rounded w-full p-2" placeholder="备注（可选）" />
           <button id="addAwb" class="px-4 py-2 bg-green-600 text-white rounded">登记运单</button>
         </div>
         <div class="mt-4">
           <h3 class="font-semibold mb-1">已登记运单</h3>
           <div id="awbList" class="text-sm space-y-1"></div>
         </div>
-      </section>
+      </aside>
     </div>
 
-    <!-- 每日总汇 -->
+    <!-- 每日总汇（可展开明细） -->
     <section class="bg-white rounded-2xl shadow-sm p-4 md:p-6 mt-6">
-      <h2 class="text-lg font-semibold mb-2">📅 每日总汇（可展开明细）</h2>
-      <div id="dailySummary" class="space-y-2 text-sm"></div>
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold">📅 每日总汇（可展开明细）</h2>
+        <div class="flex items-center gap-2">
+          <button id="expandAll" class="px-3 py-1.5 rounded bg-gray-100">展开全部</button>
+          <button id="collapseAll" class="px-3 py-1.5 rounded bg-gray-100">折叠全部</button>
+        </div>
+      </div>
+      <div id="dailySummary" class="space-y-2 text-sm mt-2"></div>
     </section>
+
+    <!-- SKU 管理（可新增/编辑/删除 + 导入/导出） -->
+    <section class="bg-white rounded-2xl shadow-sm p-4 md:p-6 mt-6">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold">🧰 SKU 管理（UPC → 型号/容量/颜色）</h2>
+        <div class="flex items-center gap-2 text-sm">
+          <button id="skuExport" class="px-3 py-1.5 rounded bg-emerald-600 text-white">导出 SKU CSV</button>
+          <button id="skuImportBtn" class="px-3 py-1.5 rounded bg-gray-100">导入 SKU CSV</button>
+          <input id="skuFile" type="file" accept=".csv" class="hidden" />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mt-3">
+        <input id="sku_upc" class="border rounded w-full p-2" placeholder="UPC" />
+        <input id="sku_device" class="border rounded w-full p-2" placeholder="Device Name" />
+        <input id="sku_capacity" class="border rounded w-full p-2" placeholder="Capacity" />
+        <input id="sku_color" class="border rounded w-full p-2" placeholder="Color" />
+      </div>
+      <div class="flex items-center gap-3 mt-3">
+        <button id="skuAdd" class="px-3 py-2 rounded bg-blue-600 text-white">新增 / 更新</button>
+        <button id="skuClear" class="px-3 py-2 rounded bg-gray-100">清空输入</button>
+        <div class="text-sm text-gray-600">条目数：<span id="skuCount">0</span></div>
+      </div>
+
+      <div class="overflow-auto border rounded-xl max-h-[40vh] mt-3">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-50 sticky top-0">
+            <tr>
+              <th class="px-3 py-2 text-left">UPC</th>
+              <th class="px-3 py-2 text-left">Device</th>
+              <th class="px-3 py-2 text-left">Capacity</th>
+              <th class="px-3 py-2 text-left">Color</th>
+              <th class="px-3 py-2 text-left">操作</th>
+            </tr>
+          </thead>
+          <tbody id="skuTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer class="mt-6 text-xs text-gray-500">本页面所有数据保存在浏览器 <strong>localStorage</strong>（可导出 CSV 备份）。</footer>
   </div>
 
 <script>
-  const scans = JSON.parse(localStorage.getItem('scans_v1') || '[]');
-  const awbs = JSON.parse(localStorage.getItem('awbs_v1') || '[]');
-  const dailySummary = document.getElementById('dailySummary');
-  const awbList = document.getElementById('awbList');
+(() => {
+  // ====== 数据层 ======
+  const DB = {
+    scansKey: 'scans_v2',
+    awbsKey: 'awbs_v1',
+    skuKey: 'sku_map_v2',
+    load(k){ try { return JSON.parse(localStorage.getItem(k)|| (k===this.skuKey?'{}':'[]')); } catch(e){ return k===this.skuKey? {}: []; } },
+    save(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+  };
+  let scans = DB.load(DB.scansKey);     // [{time, upc, sn, device, capacity, color}]
+  let awbs  = DB.load(DB.awbsKey);      // [{code, carrier, date, note}]
+  let sku   = DB.load(DB.skuKey);       // { upc: {device,capacity,color} }
 
-  function renderAll() {
-    // 渲染运单列表
-    awbList.innerHTML = awbs.map(a => `<div>${a.date} · ${a.code} <span class='text-gray-500'>${a.carrier||''}</span></div>`).join('');
+  // ====== DOM ======
+  const els = {
+    // 扫码
+    cameraSelect: document.getElementById('cameraSelect'),
+    preview: document.getElementById('preview'),
+    btnToggle: document.getElementById('btnToggle'),
+    status: document.getElementById('status'),
+    upc: document.getElementById('upc'),
+    sn: document.getElementById('sn'),
+    device: document.getElementById('device'),
+    capacity: document.getElementById('capacity'),
+    color: document.getElementById('color'),
+    addScan: document.getElementById('addScan'),
+    exportCSV: document.getElementById('exportCSV'),
+    // 运单
+    awbCode: document.getElementById('awbCode'),
+    awbCarrier: document.getElementById('awbCarrier'),
+    awbDate: document.getElementById('awbDate'),
+    awbNote: document.getElementById('awbNote'),
+    addAwb: document.getElementById('addAwb'),
+    awbList: document.getElementById('awbList'),
+    // 总汇
+    dailySummary: document.getElementById('dailySummary'),
+    expandAll: document.getElementById('expandAll'),
+    collapseAll: document.getElementById('collapseAll'),
+    // SKU 管理
+    sku_upc: document.getElementById('sku_upc'),
+    sku_device: document.getElementById('sku_device'),
+    sku_capacity: document.getElementById('sku_capacity'),
+    sku_color: document.getElementById('sku_color'),
+    skuAdd: document.getElementById('skuAdd'),
+    skuClear: document.getElementById('skuClear'),
+    skuExport: document.getElementById('skuExport'),
+    skuImportBtn: document.getElementById('skuImportBtn'),
+    skuFile: document.getElementById('skuFile'),
+    skuTable: document.getElementById('skuTable'),
+    skuCount: document.getElementById('skuCount'),
+  };
 
-    // 整理每日汇总
+  // ====== 工具函数 ======
+  const pad = n => String(n).padStart(2,'0');
+  const nowStr = () => { const d=new Date(); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`; };
+  const dateOnly = s => (s||'').split(' ')[0];
+  const setStatus = (t, ok=true) => { els.status.textContent = t; els.status.className = ok? 'text-green-700' : 'text-red-700'; };
+
+  // ====== 渲染 ======
+  function renderAWB(){
+    els.awbList.innerHTML = awbs.map(a=> `<div>${a.date} · ${a.code} <span class='text-gray-500'>${a.carrier||''}</span> ${a.note? '· '+a.note:''}</div>`).join('');
+  }
+
+  function renderDaily(){
     const summary = {};
-    for (const s of scans) {
-      const d = s.time.split(' ')[0];
-      if (!summary[d]) summary[d] = { scan: [], awb: [] };
-      summary[d].scan.push(s);
-    }
-    for (const a of awbs) {
-      const d = a.date || new Date().toISOString().slice(0,10);
-      if (!summary[d]) summary[d] = { scan: [], awb: [] };
-      summary[d].awb.push(a);
-    }
-
-    // 生成每日卡片（可展开）
-    const sorted = Object.entries(summary).sort((a,b)=>b[0].localeCompare(a[0]));
-    dailySummary.innerHTML = sorted.map(([d,v]) => `
+    for (const s of scans){ const d = dateOnly(s.time); (summary[d] ||= {scan:[], awb:[]}).scan.push(s); }
+    for (const a of awbs){ const d = a.date || new Date().toISOString().slice(0,10); (summary[d] ||= {scan:[], awb:[]}).awb.push(a); }
+    const sorted = Object.entries(summary).sort((a,b)=> b[0].localeCompare(a[0]));
+    els.dailySummary.innerHTML = sorted.map(([d,v])=> `
       <details class='border rounded-lg bg-gray-50'>
-        <summary class='p-2 flex justify-between cursor-pointer'>
-          <div>${d}</div>
-          <div>扫码：<strong>${v.scan.length}</strong> ｜ 运单：<strong>${v.awb.length}</strong></div>
+        <summary class='p-2 flex justify-between'>
+          <span>${d}</span>
+          <span>扫码：<strong>${v.scan.length}</strong> ｜ 运单：<strong>${v.awb.length}</strong></span>
         </summary>
         <div class='p-3 bg-white border-t'>
           <h4 class='font-semibold text-sm mb-1'>📋 扫描明细 (${v.scan.length} 条)</h4>
-          <table class='w-full text-xs border mb-3'>
-            <thead class='bg-gray-100'>
-              <tr>
-                <th class='border p-1'>时间</th>
-                <th class='border p-1'>UPC</th>
-                <th class='border p-1'>序列号</th>
-                <th class='border p-1'>设备</th>
-                <th class='border p-1'>容量</th>
-                <th class='border p-1'>颜色</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${v.scan.map(s => `<tr><td class='border p-1'>${s.time}</td><td class='border p-1'>${s.upc}</td><td class='border p-1'>${s.sn}</td><td class='border p-1'>${s.device}</td><td class='border p-1'>${s.capacity}</td><td class='border p-1'>${s.color}</td></tr>`).join('')}
-            </tbody>
-          </table>
+          <div class='overflow-auto max-h-[40vh]'>
+            <table class='w-full text-xs border mb-3'>
+              <thead class='bg-gray-100'><tr><th class='border p-1'>时间</th><th class='border p-1'>UPC</th><th class='border p-1'>序列号</th><th class='border p-1'>设备</th><th class='border p-1'>容量</th><th class='border p-1'>颜色</th></tr></thead>
+              <tbody>${v.scan.map(s=>`<tr><td class='border p-1'>${s.time}</td><td class='border p-1'>${s.upc}</td><td class='border p-1'>${s.sn}</td><td class='border p-1'>${s.device}</td><td class='border p-1'>${s.capacity}</td><td class='border p-1'>${s.color}</td></tr>`).join('')}</tbody>
+            </table>
+          </div>
           <h4 class='font-semibold text-sm mb-1'>🧾 运单明细 (${v.awb.length} 单)</h4>
-          <ul class='list-disc list-inside text-xs'>
-            ${v.awb.map(a => `<li>${a.code} ${a.carrier? '· '+a.carrier:''}</li>`).join('')}
-          </ul>
+          <ul class='list-disc list-inside text-xs'>${v.awb.map(a=>`<li>${a.code} ${a.carrier? '· '+a.carrier:''} ${a.note? '· '+a.note:''}</li>`).join('')}</ul>
         </div>
       </details>`).join('');
   }
 
-  document.getElementById('addScan').onclick = () => {
-    const upc = document.getElementById('upc').value.trim();
-    const sn = document.getElementById('sn').value.trim();
-    if (!upc && !sn) return alert('请输入UPC或序列号');
-    if (sn && scans.some(r => r.sn === sn)) return alert('序列号已存在');
-    scans.push({
-      time: new Date().toLocaleString('zh-CN',{hour12:false}),
-      upc, sn,
-      device: document.getElementById('device').value.trim(),
-      capacity: document.getElementById('capacity').value.trim(),
-      color: document.getElementById('color').value.trim()
+  function renderSKU(){
+    els.skuCount.textContent = Object.keys(sku).length;
+    const rows = Object.entries(sku).sort((a,b)=> a[0].localeCompare(b[0]));
+    els.skuTable.innerHTML = rows.map(([upc, v])=> `
+      <tr class='odd:bg-gray-50'>
+        <td class='px-3 py-2'>${upc}</td>
+        <td class='px-3 py-2'>${v.device||''}</td>
+        <td class='px-3 py-2'>${v.capacity||''}</td>
+        <td class='px-3 py-2'>${v.color||''}</td>
+        <td class='px-3 py-2'>
+          <button data-edit='${upc}' class='text-indigo-600 hover:underline mr-2'>编辑</button>
+          <button data-del='${upc}' class='text-red-600 hover:underline'>删除</button>
+        </td>
+      </tr>`).join('');
+
+    // 绑定操作
+    els.skuTable.querySelectorAll('[data-edit]')?.forEach(btn=>{
+      btn.onclick = () => { const u = btn.getAttribute('data-edit'); const it = sku[u]||{}; els.sku_upc.value=u; els.sku_device.value=it.device||''; els.sku_capacity.value=it.capacity||''; els.sku_color.value=it.color||''; window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'}); };
     });
-    localStorage.setItem('scans_v1', JSON.stringify(scans));
-    renderAll();
-  };
+    els.skuTable.querySelectorAll('[data-del]')?.forEach(btn=>{
+      btn.onclick = () => { const u = btn.getAttribute('data-del'); if(confirm(`删除 SKU ${u}?`)){ delete sku[u]; DB.save(DB.skuKey, sku); renderSKU(); } };
+    });
+  }
 
-  document.getElementById('addAwb').onclick = () => {
-    const code = document.getElementById('awbCode').value.trim();
-    if (!code) return alert('请输入运单号');
-    const carrier = document.getElementById('awbCarrier').value.trim();
-    const date = document.getElementById('awbDate').value || new Date().toISOString().slice(0,10);
-    awbs.push({ code, carrier, date });
-    localStorage.setItem('awbs_v1', JSON.stringify(awbs));
-    renderAll();
-  };
+  function renderAll(){ renderAWB(); renderDaily(); renderSKU(); }
 
-  renderAll();
+  // ====== CSV ======
+  function csvEscape(s){ s = String(s ?? ''); return (/[,"\n]/.test(s)) ? '"'+s.replace(/"/g,'""')+'"' : s; }
+  function exportScansCSV(){
+    const header = ['Time','UPC','Serial','Device','Capacity','Color'];
+    const lines = [header.join(',')];
+    for(const r of scans){ lines.push([r.time,r.upc,r.sn,r.device,r.capacity,r.color].map(csvEscape).join(',')); }
+    const blob = new Blob(["\uFEFF"+lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`ScanLog_${Date.now()}.csv`; a.click(); URL.revokeObjectURL(url);
+  }
+  function exportSkuCSV(){
+    const header = ['UPC','Device Name','Capacity','Color'];
+    const lines = [header.join(',')];
+    for(const [u,v] of Object.entries(sku)){ lines.push([u,v.device||'',v.capacity||'',v.color||''].map(csvEscape).join(',')); }
+    const blob = new Blob(["\uFEFF"+lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`SKU_Map_${Date.now()}.csv`; a.click(); URL.revokeObjectURL(url);
+  }
+  function parseCSVLine(line){ const out=[]; let cur=''; let inQ=false; for(let i=0;i<line.length;i++){ const ch=line[i]; if(inQ){ if(ch==='"'){ if(line[i+1]==='"'){cur+='"';i++;} else inQ=false; } else cur+=ch; } else { if(ch==='"') inQ=true; else if(ch===','){ out.push(cur); cur=''; } else cur+=ch; } } out.push(cur); return out; }
+  function importSkuCSV(file){ const reader=new FileReader(); reader.onload=e=>{ const text=e.target.result; const lines=text.split(/\r?\n/).filter(Boolean); const start = /^upc(,|$)/i.test(lines[0])?1:0; for(let i=start;i<lines.length;i++){ const c=parseCSVLine(lines[i]); const u=(c[0]||'').trim(); if(!u) continue; sku[u]={device:(c[1]||'').trim(), capacity:(c[2]||'').trim(), color:(c[3]||'').trim()}; } DB.save(DB.skuKey, sku); renderSKU(); setStatus('SKU CSV 导入完成'); }; reader.readAsText(file,'utf-8'); }
+
+  // ====== 逻辑：根据 UPC 自动回填 ======
+  function autofillFromUPC(upc){ const m = sku[upc]; if(!m) return; if(!els.device.value) els.device.value = m.device||''; if(!els.capacity.value) els.capacity.value = m.capacity||''; if(!els.color.value) els.color.value = m.color||''; }
+
+  // ====== 录入扫码 ======
+  function addScan(){
+    const upc = els.upc.value.trim();
+    const sn  = els.sn.value.trim();
+    if (!upc && !sn) { setStatus('请填写 UPC 或 序列号', false); return; }
+    if (sn && scans.some(r=>r.sn===sn)) { setStatus('序列号已存在，禁止重复', false); return; }
+    const row = { time: nowStr(), upc, sn, device: els.device.value.trim(), capacity: els.capacity.value.trim(), color: els.color.value.trim() };
+    scans.push(row); DB.save(DB.scansKey, scans); setStatus('已录入');
+    els.upc.value=''; els.sn.value=''; // 保持回填字段以便批量录入时复用
+    renderDaily();
+  }
+
+  // ====== 运单登记 ======
+  function addAwb(){
+    const code=(els.awbCode.value||'').trim(); if(!code) return alert('请输入运单号');
+    const a = { code, carrier:(els.awbCarrier.value||'').trim(), date: els.awbDate.value || new Date().toISOString().slice(0,10), note:(els.awbNote.value||'').trim() };
+    awbs.push(a); DB.save(DB.awbsKey, awbs); els.awbCode.value=''; els.awbCarrier.value=''; els.awbNote.value=''; renderAWB(); renderDaily(); setStatus('已登记运单');
+  }
+
+  // ====== 摄像扫码（ZXing） ======
+  const { BrowserMultiFormatReader, NotFoundException } = ZXing; let codeReader=null, selectedDeviceId=null, scanning=false; let mode='UPC';
+  async function listCameras(){ try { const devices=await BrowserMultiFormatReader.listVideoInputDevices(); els.cameraSelect.innerHTML=''; devices.forEach((d,i)=>{ const opt=document.createElement('option'); opt.value=d.deviceId; opt.textContent=d.label || `摄像头 ${i+1}`; els.cameraSelect.appendChild(opt); }); if(devices[0]) selectedDeviceId=devices[0].deviceId; } catch(e){ setStatus('无法获取摄像头列表', false); } }
+  async function startScan(){ if(scanning) return; if(!selectedDeviceId) await listCameras(); codeReader=new BrowserMultiFormatReader(); try{ scanning=true; els.btnToggle.textContent='⏹ 停止扫码'; await codeReader.decodeFromVideoDevice(selectedDeviceId, els.preview, (result, err)=>{ if(result){ const text=result.getText().trim(); els.upc.value=text; autofillFromUPC(text); flashOverlay(); setStatus('扫码成功'); } else if (err && !(err instanceof NotFoundException)){ console.warn(err); } }); } catch(err){ setStatus('启动摄像头失败：'+err.message, false); scanning=false; els.btnToggle.textContent='▶ 开始扫码'; } }
+  async function stopScan(){ if(!scanning) return; try{ await codeReader.reset(); }catch{} scanning=false; els.btnToggle.textContent='▶ 开始扫码'; }
+  function flashOverlay(){ const ov=document.getElementById('overlay'); ov.style.borderColor='rgba(16,185,129,1)'; setTimeout(()=> ov.style.borderColor='rgba(255,255,255,0.9)',180); }
+
+  // ====== 事件 ======
+  els.upc.addEventListener('change', ()=> autofillFromUPC(els.upc.value.trim()));
+  els.addScan.addEventListener('click', addScan);
+  els.exportCSV.addEventListener('click', exportScansCSV);
+  els.addAwb.addEventListener('click', addAwb);
+  els.btnToggle.addEventListener('click', ()=> scanning?stopScan():startScan());
+  els.cameraSelect.addEventListener('change', e=> selectedDeviceId=e.target.value);
+  els.expandAll.addEventListener('click', ()=> document.querySelectorAll('#dailySummary details').forEach(d=> d.open=true));
+  els.collapseAll.addEventListener('click', ()=> document.querySelectorAll('#dailySummary details').forEach(d=> d.open=false));
+
+  // SKU 事件
+  els.skuAdd.addEventListener('click', ()=>{ const u=els.sku_upc.value.trim(); if(!u) return alert('请输入 UPC'); sku[u]={ device:els.sku_device.value.trim(), capacity:els.sku_capacity.value.trim(), color:els.sku_color.value.trim() }; DB.save(DB.skuKey, sku); renderSKU(); setStatus('SKU 已保存'); });
+  els.skuClear.addEventListener('click', ()=>{ els.sku_upc.value=''; els.sku_device.value=''; els.sku_capacity.value=''; els.sku_color.value=''; });
+  els.skuExport.addEventListener('click', exportSkuCSV);
+  els.skuImportBtn.addEventListener('click', ()=> els.skuFile.click());
+  els.skuFile.addEventListener('change', e=> e.target.files[0] && importSkuCSV(e.target.files[0]));
+
+  document.addEventListener('keydown', (e)=>{ if(e.key===' '){ e.preventDefault(); scanning?stopScan():startScan(); } else if(e.key==='Enter'){ addScan(); } });
+
+  // ====== 初始化 ======
+  (async function init(){ await listCameras(); renderAll(); setStatus('就绪'); })();
+})();
 </script>
 </body>
 </html>
