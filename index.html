@@ -1,174 +1,185 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8" />
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>扫码平台 · 运单/设备 双模块 · 暗色 + SKU映射</title>
+<title>扫码平台 · 运单号 + 序列号 + SKU 自动识别</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
 <style>
-:root{
-  --bg:#0b0f14;--panel:#121822;--card:#0f1520;--muted:#98a2b3;--text:#e8eef6;
-  --accent:#4cc9f0;--accent2:#7c5cff;--good:#16a34a;--warn:#f59e0b;--bad:#ef4444;
-  --line:#1f2937;--chip:#1b2331;--chip-b:#2b364a;--btn:#1a2232;--btn-b:#2a3448;
-}
-html,body{height:100%;margin:0;background:linear-gradient(180deg,#0a0e14 0%,#0b111a 100%);
-color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans",sans-serif;}
-.wrap{max-width:1200px;margin:auto;padding:24px;}
-.title{display:flex;gap:12px;align-items:center;margin-bottom:16px}
-.logo{width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 0 0 2px #111 inset}
-h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.2px}
-.tabs{display:flex;gap:8px;margin:8px 0 20px}
-.tab{cursor:pointer;padding:10px 14px;border-radius:10px;background:var(--btn);border:1px solid var(--btn-b);color:var(--text);opacity:.85}
-.tab.active{background:linear-gradient(180deg,#151d2b,#0f1623);border-color:#2a3a55;opacity:1;box-shadow:0 0 0 1px #2a3a55 inset}
-.panel{background:linear-gradient(180deg,#0c1220,#0a111c);border:1px solid #1e2a3f;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);margin-bottom:20px}
-.head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #1f2a40}
-input,select,button{height:38px;padding:0 10px;border-radius:10px;border:1px solid #2a3448;background:#0e1522;color:var(--text);outline:none}
-button{cursor:pointer;background:linear-gradient(180deg,#1a2232,#121a28);border-color:#2a3448}
-.btn-sm{height:30px;padding:0 10px;border-radius:8px;font-size:12px}
-.accent{background:linear-gradient(180deg,#214155,#163042);border-color:#2e5a76;color:#dbeafe}
-.good{background:linear-gradient(180deg,#12361f,#0f2a19);border-color:#1d4d2b}
-.bad{background:linear-gradient(180deg,#3a1212,#2a0f0f);border-color:#5a1f1f}
-.hidden{display:none}
-.muted{color:var(--muted)}
-.flex{display:flex;gap:10px;align-items:center}
-.table{width:100%;border-collapse:collapse;font-size:13px}
-.table th,.table td{padding:8px;border-bottom:1px solid #1e2a40}
-.table th{background:#0c121a;color:#9db0c3;text-align:left}
+body { background: #f8fafc; font-family: ui-sans-serif, system-ui; }
+.card { background: #fff; border-radius: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 1.5rem; margin-top: 1.5rem; }
+.btn { background: #2563eb; color: #fff; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; }
+.btn:hover { background: #1e40af; }
+input, select { border: 1px solid #ddd; border-radius: 0.375rem; padding: 0.4rem; }
+table { width: 100%; border-collapse: collapse; }
+th, td { border: 1px solid #ddd; padding: 0.5rem; text-align: center; }
+th { background: #f1f5f9; }
+tr:nth-child(even) { background: #f9fafb; }
+textarea { width: 100%; height: 60px; border: 1px solid #ccc; border-radius: 0.375rem; padding: 0.5rem; }
 </style>
 </head>
-<body>
-<div class="wrap">
-  <div class="title"><div class="logo"></div><h1>扫码平台 · 运单/设备双模块</h1><span class="muted">支持单码枪 / FS40 / FS42</span></div>
-  <div class="tabs">
-    <div class="tab active" data-tab="tracking">运单登记</div>
-    <div class="tab" data-tab="device">设备登记</div>
-    <div class="tab" data-tab="settings">设置 / SKU映射</div>
+
+<body class="p-6">
+  <h1 class="text-2xl font-bold text-gray-800 mb-4">📦 Apple 扫码登记平台</h1>
+  <p class="text-gray-600 mb-6">支持：运单号登记 + 序列号/UPC登记 + SKU自动匹配 + 手动关联 + CSV导出</p>
+
+  <!-- SKU 导入 -->
+  <div class="card">
+    <h2 class="text-xl font-semibold mb-3">🔗 SKU 映射表</h2>
+    <button class="btn" onclick="document.getElementById('skuUpload').click()">上传 SKU 映射（CSV）</button>
+    <input type="file" id="skuUpload" accept=".csv" style="display:none">
+    <span id="skuStatus" class="ml-3 text-sm text-gray-600"></span>
   </div>
 
-  <!-- 运单 -->
-  <section id="panel-tracking" class="panel">
-    <div class="head"><h2>🚚 运单登记（FedEx 截取后12位 / UPS 保留完整）</h2></div>
-    <div class="flex" style="padding:12px">
-      <input id="t_tag" placeholder="标记（如 A001）">
-      <input id="t_input" placeholder="扫描运单号">
-      <button id="addTracking">添加运单</button>
+  <!-- 运单号登记 -->
+  <div class="card">
+    <h2 class="text-xl font-semibold mb-3">🚚 运单号登记</h2>
+    <div class="flex gap-2 mb-3">
+      <input type="text" id="mark" placeholder="标记编号 (例: A001)" class="w-1/4">
+      <input type="text" id="tracking" placeholder="运单号 (FedEx/UPS)" class="flex-1">
+      <button class="btn" onclick="addTracking()">登记运单号</button>
     </div>
-    <table class="table"><thead><tr><th>标记</th><th>运单号</th><th>类型</th><th>时间</th></tr></thead><tbody id="tBody"></tbody></table>
-  </section>
+    <table id="trackingTable">
+      <thead><tr><th>标记编号</th><th>运单号</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-  <!-- 设备 -->
-  <section id="panel-device" class="panel hidden">
-    <div class="head"><h2>📱 设备登记（支持SKU自动匹配）</h2></div>
-    <div class="flex" style="padding:12px;flex-wrap:wrap">
-      <input id="d_tag" placeholder="标记（如 A001）">
-      <input id="d_serial" placeholder="序列号（Serial）">
-      <input id="d_upc" placeholder="UPC（可匹配SKU）">
-      <input id="d_device" placeholder="Device">
-      <input id="d_capacity" placeholder="Capacity">
-      <input id="d_color" placeholder="Color">
-      <button id="addDevice">添加设备</button>
+  <!-- 序列号/UPC 登记 -->
+  <div class="card">
+    <h2 class="text-xl font-semibold mb-3">📱 序列号 / UPC 登记</h2>
+    <div class="flex gap-2 mb-3">
+      <input type="text" id="refMark" placeholder="关联标记 (例: A001)" class="w-1/4">
+      <input type="text" id="serial" placeholder="序列号" class="w-1/4">
+      <input type="text" id="upc" placeholder="UPC" class="w-1/4">
+      <input type="text" id="device" placeholder="Device" class="w-1/5 device">
+      <input type="text" id="capacity" placeholder="Capacity" class="w-1/5 capacity">
+      <input type="text" id="color" placeholder="Color" class="w-1/5 color">
+      <button class="btn" onclick="addDevice()">登记设备</button>
     </div>
-    <table class="table"><thead><tr><th>标记</th><th>序列号</th><th>UPC</th><th>Device</th><th>Capacity</th><th>Color</th><th>时间</th></tr></thead><tbody id="dBody"></tbody></table>
-  </section>
+    <table id="deviceTable">
+      <thead><tr><th>标记编号</th><th>序列号</th><th>UPC</th><th>Device</th><th>Capacity</th><th>Color</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-  <!-- 设置 -->
-  <section id="panel-settings" class="panel hidden">
-    <div class="head"><h2>⚙️ 设置 / 导入SKU映射</h2></div>
-    <div style="padding:16px">
-      <label class="btn-sm accent" for="skuUpload">导入 SKU 映射 CSV</label>
-      <input type="file" id="skuUpload" accept=".csv" class="hidden">
-      <p class="muted">格式：UPC,Device,Capacity,Color（将自动保存本地）</p>
-    </div>
-  </section>
-</div>
+  <!-- 导出 -->
+  <div class="card">
+    <h2 class="text-xl font-semibold mb-3">💾 数据导出</h2>
+    <button class="btn" onclick="exportCSV()">导出所有数据 (CSV)</button>
+  </div>
 
 <script>
-const $=s=>document.querySelector(s);
-const now=()=>new Date().toLocaleString('zh-CN',{hour12:false});
-let tracks=JSON.parse(localStorage.getItem('tracks')||'[]');
-let devices=JSON.parse(localStorage.getItem('devices')||'[]');
-let skuMap=JSON.parse(localStorage.getItem('skuMap')||'{}');
+let skuMap = {};
+let trackingData = [];
+let deviceData = [];
 
-/* === Tab 切换 === */
-document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
-  document.querySelectorAll('.tab').forEach(a=>a.classList.remove('active'));
-  t.classList.add('active');
-  ['tracking','device','settings'].forEach(n=>$('#panel-'+n).classList.toggle('hidden',n!==t.dataset.tab));
+// 上传 SKU CSV
+document.getElementById('skuUpload').addEventListener('change', e => {
+  if (e.target.files.length > 0) loadSkuMap(e.target.files[0]);
 });
 
-/* === FedEx/UPS 自动识别 === */
-function normalizeTracking(v){
-  v=v.trim();if(!v)return null;
-  if(v.startsWith('1Z'))return {carrier:'UPS',num:v};
-  let d=v.replace(/\D+/g,'');
-  return d.length>=12?{carrier:'FedEx',num:d.slice(-12)}:{carrier:'Other',num:v};
-}
-
-/* === 添加运单 === */
-$('#addTracking').onclick=()=>{
-  const tag=$('#t_tag').value.trim();
-  const raw=$('#t_input').value.trim();
-  if(!raw)return alert('请输入运单号');
-  const t=normalizeTracking(raw);
-  tracks.push({tag,carrier:t.carrier,num:t.num,time:now()});
-  localStorage.setItem('tracks',JSON.stringify(tracks));
-  $('#t_input').value='';
-  renderTracks();
-};
-function renderTracks(){
-  const tb=$('#tBody');tb.innerHTML='';
-  tracks.slice().reverse().forEach(r=>{
-    tb.innerHTML+=`<tr><td>${r.tag||'-'}</td><td>${r.num}</td><td>${r.carrier}</td><td>${r.time}</td></tr>`;
-  });
-}
-renderTracks();
-
-/* === 添加设备 === */
-$('#addDevice').onclick=()=>{
-  const tag=$('#d_tag').value.trim();
-  const serial=$('#d_serial').value.trim();
-  const upc=$('#d_upc').value.trim();
-  let device=$('#d_device').value.trim();
-  let capacity=$('#d_capacity').value.trim();
-  let color=$('#d_color').value.trim();
-
-  // 自动SKU匹配
-  if(upc && skuMap[upc]){
-    const s=skuMap[upc];
-    if(!device) device=s.device||'';
-    if(!capacity) capacity=s.capacity||'';
-    if(!color) color=s.color||'';
-  }
-
-  devices.push({tag,serial,upc,device,capacity,color,time:now()});
-  localStorage.setItem('devices',JSON.stringify(devices));
-  ['d_serial','d_upc','d_device','d_capacity','d_color'].forEach(id=>$('#'+id).value='');
-  renderDevices();
-};
-function renderDevices(){
-  const tb=$('#dBody');tb.innerHTML='';
-  devices.slice().reverse().forEach(r=>{
-    tb.innerHTML+=`<tr><td>${r.tag||'-'}</td><td>${r.serial}</td><td>${r.upc}</td>
-    <td>${r.device||''}</td><td>${r.capacity||''}</td><td>${r.color||''}</td><td>${r.time}</td></tr>`;
-  });
-}
-renderDevices();
-
-/* === SKU 映射导入 === */
-$('#skuUpload').onchange=e=>{
-  const file=e.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const rows=ev.target.result.split(/\r?\n/);
-    skuMap={};
-    rows.slice(1).forEach(r=>{
-      const [upc,dev,cap,col]=r.split(',');
-      if(upc)skuMap[upc.trim()]={device:dev,capacity:cap,color:col};
+function loadSkuMap(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const rows = e.target.result.split(/\r?\n/);
+    rows.slice(1).forEach(row => {
+      const [upc, device, capacity, color] = row.split(',');
+      if (upc) skuMap[upc.trim()] = {device, capacity, color};
     });
-    localStorage.setItem('skuMap',JSON.stringify(skuMap));
-    alert('✅ SKU 映射导入成功，共 '+Object.keys(skuMap).length+' 条');
+    localStorage.setItem('skuMap', JSON.stringify(skuMap));
+    document.getElementById('skuStatus').innerText = `✅ SKU 映射加载成功，共 ${Object.keys(skuMap).length} 条`;
   };
-  reader.readAsText(file,'utf-8');
-};
+  reader.readAsText(file, 'utf-8');
+}
+
+// 加载缓存 SKU
+window.addEventListener('load', () => {
+  const cached = localStorage.getItem('skuMap');
+  if (cached) {
+    skuMap = JSON.parse(cached);
+    document.getElementById('skuStatus').innerText = `✅ 已加载缓存映射 ${Object.keys(skuMap).length} 条`;
+  }
+});
+
+// 自动匹配 UPC
+document.getElementById('upc').addEventListener('input', e => {
+  const upc = e.target.value.trim();
+  const sku = skuMap[upc];
+  if (sku) {
+    document.getElementById('device').value = sku.device || '';
+    document.getElementById('capacity').value = sku.capacity || '';
+    document.getElementById('color').value = sku.color || '';
+  }
+});
+
+// 添加运单号
+function addTracking() {
+  const mark = document.getElementById('mark').value.trim();
+  let tracking = document.getElementById('tracking').value.trim();
+  if (!mark || !tracking) return alert('请填写标记编号与运单号');
+  if (tracking.startsWith('96') || tracking.length > 12) tracking = tracking.slice(-12); // FedEx 截取后12位
+  trackingData.push({ mark, tracking });
+  updateTrackingTable();
+  document.getElementById('mark').value = '';
+  document.getElementById('tracking').value = '';
+}
+
+function updateTrackingTable() {
+  const tbody = document.querySelector('#trackingTable tbody');
+  tbody.innerHTML = '';
+  trackingData.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${item.mark}</td><td>${item.tracking}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// 添加设备
+function addDevice() {
+  const refMark = document.getElementById('refMark').value.trim();
+  const serial = document.getElementById('serial').value.trim();
+  const upc = document.getElementById('upc').value.trim();
+  const device = document.getElementById('device').value.trim();
+  const capacity = document.getElementById('capacity').value.trim();
+  const color = document.getElementById('color').value.trim();
+  if (!serial && !upc) return alert('请输入序列号或UPC');
+  deviceData.push({ refMark, serial, upc, device, capacity, color });
+  updateDeviceTable();
+  document.getElementById('serial').value = '';
+  document.getElementById('upc').value = '';
+  document.getElementById('device').value = '';
+  document.getElementById('capacity').value = '';
+  document.getElementById('color').value = '';
+}
+
+// 更新设备表
+function updateDeviceTable() {
+  const tbody = document.querySelector('#deviceTable tbody');
+  tbody.innerHTML = '';
+  deviceData.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${item.refMark}</td><td>${item.serial}</td><td>${item.upc}</td><td>${item.device}</td><td>${item.capacity}</td><td>${item.color}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// 导出所有数据
+function exportCSV() {
+  let csv = '标记编号,运单号,序列号,UPC,Device,Capacity,Color\n';
+  deviceData.forEach(dev => {
+    const match = trackingData.find(t => t.mark === dev.refMark);
+    csv += `${dev.refMark},${match ? match.tracking : ''},${dev.serial},${dev.upc},${dev.device},${dev.capacity},${dev.color}\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'scan_export.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
 </script>
 </body>
 </html>
