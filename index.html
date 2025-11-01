@@ -1,184 +1,174 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>工业扫码平台 · 单码枪 / FS40 / FS42 通用版</title>
+<title>扫码平台 · 运单/设备 双模块 · 暗色 + SKU映射</title>
 <style>
-:root {
-  --bg:#0b0f14;--panel:#121821;--card:#0e141d;--accent:#27e6a7;
-  --accent2:#00b3ff;--text:#e7eef7;--muted:#9db0c3;
-  --bd:#1d2732;--warn:#ffb648;--bad:#ff6b6b;
+:root{
+  --bg:#0b0f14;--panel:#121822;--card:#0f1520;--muted:#98a2b3;--text:#e8eef6;
+  --accent:#4cc9f0;--accent2:#7c5cff;--good:#16a34a;--warn:#f59e0b;--bad:#ef4444;
+  --line:#1f2937;--chip:#1b2331;--chip-b:#2b364a;--btn:#1a2232;--btn-b:#2a3448;
 }
-body {margin:0;background:var(--bg);color:var(--text);
-font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,"Noto Sans SC";}
-h2{margin-top:0}
-.container {max-width:1200px;margin:auto;padding:24px}
-.card {background:var(--panel);padding:16px;border-radius:12px;margin-bottom:16px;
-box-shadow:0 4px 20px rgba(0,0,0,.25)}
-input,button {font-size:15px;padding:10px;border-radius:8px;border:1px solid var(--bd);
-background:var(--card);color:var(--text);outline:none}
-button {cursor:pointer;background:linear-gradient(90deg,var(--accent),var(--accent2));border:none}
-button:hover {opacity:.9}
-.table {width:100%;border-collapse:collapse;font-size:14px}
-.table th,.table td {padding:8px;border-top:1px solid var(--bd)}
-.table th {background:#0c121a;color:#9db0c3}
-.detail td{background:#0a121a}
+html,body{height:100%;margin:0;background:linear-gradient(180deg,#0a0e14 0%,#0b111a 100%);
+color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans",sans-serif;}
+.wrap{max-width:1200px;margin:auto;padding:24px;}
+.title{display:flex;gap:12px;align-items:center;margin-bottom:16px}
+.logo{width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 0 0 2px #111 inset}
+h1{font-size:18px;margin:0;font-weight:700;letter-spacing:.2px}
+.tabs{display:flex;gap:8px;margin:8px 0 20px}
+.tab{cursor:pointer;padding:10px 14px;border-radius:10px;background:var(--btn);border:1px solid var(--btn-b);color:var(--text);opacity:.85}
+.tab.active{background:linear-gradient(180deg,#151d2b,#0f1623);border-color:#2a3a55;opacity:1;box-shadow:0 0 0 1px #2a3a55 inset}
+.panel{background:linear-gradient(180deg,#0c1220,#0a111c);border:1px solid #1e2a3f;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);margin-bottom:20px}
+.head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #1f2a40}
+input,select,button{height:38px;padding:0 10px;border-radius:10px;border:1px solid #2a3448;background:#0e1522;color:var(--text);outline:none}
+button{cursor:pointer;background:linear-gradient(180deg,#1a2232,#121a28);border-color:#2a3448}
+.btn-sm{height:30px;padding:0 10px;border-radius:8px;font-size:12px}
+.accent{background:linear-gradient(180deg,#214155,#163042);border-color:#2e5a76;color:#dbeafe}
+.good{background:linear-gradient(180deg,#12361f,#0f2a19);border-color:#1d4d2b}
+.bad{background:linear-gradient(180deg,#3a1212,#2a0f0f);border-color:#5a1f1f}
+.hidden{display:none}
 .muted{color:var(--muted)}
-.flex{display:flex;gap:10px;flex-wrap:wrap}
-input:focus{border-color:var(--accent)}
+.flex{display:flex;gap:10px;align-items:center}
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table th,.table td{padding:8px;border-bottom:1px solid #1e2a40}
+.table th{background:#0c121a;color:#9db0c3;text-align:left}
 </style>
 </head>
 <body>
-<div class="container">
-  <h1>📦 工业扫码平台 <small style="color:var(--muted)">（单码枪 & FS40/FS42 兼容）</small></h1>
+<div class="wrap">
+  <div class="title"><div class="logo"></div><h1>扫码平台 · 运单/设备双模块</h1><span class="muted">支持单码枪 / FS40 / FS42</span></div>
+  <div class="tabs">
+    <div class="tab active" data-tab="tracking">运单登记</div>
+    <div class="tab" data-tab="device">设备登记</div>
+    <div class="tab" data-tab="settings">设置 / SKU映射</div>
+  </div>
 
-  <div class="card">
-    <h2>🚚 运单登记</h2>
-    <div class="flex">
-      <input id="trkTag" placeholder="标记 (Tag) 如 A001" />
-      <input id="tracking" placeholder="扫描或输入运单号" />
-      <button id="addTracking">添加</button>
+  <!-- 运单 -->
+  <section id="panel-tracking" class="panel">
+    <div class="head"><h2>🚚 运单登记（FedEx 截取后12位 / UPS 保留完整）</h2></div>
+    <div class="flex" style="padding:12px">
+      <input id="t_tag" placeholder="标记（如 A001）">
+      <input id="t_input" placeholder="扫描运单号">
+      <button id="addTracking">添加运单</button>
     </div>
-    <small class="muted">FedEx 自动取后 12 位数字；UPS 以 1Z 开头原样保留。</small>
-  </div>
+    <table class="table"><thead><tr><th>标记</th><th>运单号</th><th>类型</th><th>时间</th></tr></thead><tbody id="tBody"></tbody></table>
+  </section>
 
-  <div class="card">
-    <h2>📱 设备登记</h2>
-    <div class="flex">
-      <input id="devTag" placeholder="标记 (Tag)" />
-      <input id="serial" placeholder="序列号 Serial" />
-      <input id="upc" placeholder="UPC（可自动匹配）" />
-      <button id="addDevice">添加</button>
+  <!-- 设备 -->
+  <section id="panel-device" class="panel hidden">
+    <div class="head"><h2>📱 设备登记（支持SKU自动匹配）</h2></div>
+    <div class="flex" style="padding:12px;flex-wrap:wrap">
+      <input id="d_tag" placeholder="标记（如 A001）">
+      <input id="d_serial" placeholder="序列号（Serial）">
+      <input id="d_upc" placeholder="UPC（可匹配SKU）">
+      <input id="d_device" placeholder="Device">
+      <input id="d_capacity" placeholder="Capacity">
+      <input id="d_color" placeholder="Color">
+      <button id="addDevice">添加设备</button>
     </div>
-    <div class="flex">
-      <input id="device" placeholder="Device" />
-      <input id="capacity" placeholder="Capacity" />
-      <input id="color" placeholder="Color" />
+    <table class="table"><thead><tr><th>标记</th><th>序列号</th><th>UPC</th><th>Device</th><th>Capacity</th><th>Color</th><th>时间</th></tr></thead><tbody id="dBody"></tbody></table>
+  </section>
+
+  <!-- 设置 -->
+  <section id="panel-settings" class="panel hidden">
+    <div class="head"><h2>⚙️ 设置 / 导入SKU映射</h2></div>
+    <div style="padding:16px">
+      <label class="btn-sm accent" for="skuUpload">导入 SKU 映射 CSV</label>
+      <input type="file" id="skuUpload" accept=".csv" class="hidden">
+      <p class="muted">格式：UPC,Device,Capacity,Color（将自动保存本地）</p>
     </div>
-  </div>
-
-  <div class="card">
-    <h2>🧩 SKU 映射导入</h2>
-    <input type="file" id="skuUpload" accept=".csv" />
-    <p class="muted">格式：UPC,Device,Capacity,Color（导入后自动缓存）</p>
-    <button id="exportAll">导出全部数据 CSV</button>
-    <button style="background:var(--bad)" id="clearAll">清空数据</button>
-  </div>
-
-  <div class="card">
-    <h2>📊 汇总总览</h2>
-    <table class="table" id="summary"><thead>
-      <tr><th>Tag</th><th>运单数量</th><th>设备数量</th><th>最近时间</th></tr>
-    </thead><tbody></tbody></table>
-  </div>
+  </section>
 </div>
 
 <script>
-let trackingData = JSON.parse(localStorage.getItem('tracks')||'[]');
-let deviceData = JSON.parse(localStorage.getItem('devices')||'[]');
-let skuMap = JSON.parse(localStorage.getItem('skuMap')||'{}');
+const $=s=>document.querySelector(s);
+const now=()=>new Date().toLocaleString('zh-CN',{hour12:false});
+let tracks=JSON.parse(localStorage.getItem('tracks')||'[]');
+let devices=JSON.parse(localStorage.getItem('devices')||'[]');
+let skuMap=JSON.parse(localStorage.getItem('skuMap')||'{}');
 
-function now(){return new Date().toISOString();}
-function fmt(t){return new Date(t).toLocaleString('zh-CN',{hour12:false});}
-function save(){localStorage.setItem('tracks',JSON.stringify(trackingData));
-                localStorage.setItem('devices',JSON.stringify(deviceData));}
+/* === Tab 切换 === */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(a=>a.classList.remove('active'));
+  t.classList.add('active');
+  ['tracking','device','settings'].forEach(n=>$('#panel-'+n).classList.toggle('hidden',n!==t.dataset.tab));
+});
 
-/* --- FedEx/UPS 自动识别 --- */
+/* === FedEx/UPS 自动识别 === */
 function normalizeTracking(v){
-  v=String(v).trim(); if(!v) return null;
-  if(v.startsWith('1Z')) return {carrier:'UPS',number:v};
-  let digits=v.replace(/\D+/g,''); if(digits.length>=12)
-    return {carrier:'FedEx',number:digits.slice(-12)};
-  return {carrier:'Other',number:v};
+  v=v.trim();if(!v)return null;
+  if(v.startsWith('1Z'))return {carrier:'UPS',num:v};
+  let d=v.replace(/\D+/g,'');
+  return d.length>=12?{carrier:'FedEx',num:d.slice(-12)}:{carrier:'Other',num:v};
 }
 
-/* --- 添加运单 --- */
-document.getElementById('addTracking').onclick=()=>{
-  const tag=document.getElementById('trkTag').value.trim();
-  const raw=document.getElementById('tracking').value.trim();
-  if(!tag||!raw) return alert('请填写 Tag 与运单号');
+/* === 添加运单 === */
+$('#addTracking').onclick=()=>{
+  const tag=$('#t_tag').value.trim();
+  const raw=$('#t_input').value.trim();
+  if(!raw)return alert('请输入运单号');
   const t=normalizeTracking(raw);
-  trackingData.push({tag,carrier:t.carrier,number:t.number,time:now()});
-  save(); renderSummary(); document.getElementById('tracking').value='';
+  tracks.push({tag,carrier:t.carrier,num:t.num,time:now()});
+  localStorage.setItem('tracks',JSON.stringify(tracks));
+  $('#t_input').value='';
+  renderTracks();
 };
-
-/* --- 添加设备 --- */
-document.getElementById('addDevice').onclick=()=>{
-  const tag=document.getElementById('devTag').value.trim();
-  const serial=document.getElementById('serial').value.trim();
-  const upc=document.getElementById('upc').value.trim();
-  if(!tag||!serial) return alert('请填写 Tag 与 Serial');
-  const info=skuMap[upc]; 
-  deviceData.push({
-    tag,serial,upc,
-    device:info?.device||document.getElementById('device').value.trim(),
-    capacity:info?.capacity||document.getElementById('capacity').value.trim(),
-    color:info?.color||document.getElementById('color').value.trim(),
-    time:now()
+function renderTracks(){
+  const tb=$('#tBody');tb.innerHTML='';
+  tracks.slice().reverse().forEach(r=>{
+    tb.innerHTML+=`<tr><td>${r.tag||'-'}</td><td>${r.num}</td><td>${r.carrier}</td><td>${r.time}</td></tr>`;
   });
-  save(); renderSummary();
-  ['serial','upc','device','capacity','color'].forEach(id=>document.getElementById(id).value='');
-};
+}
+renderTracks();
 
-/* --- SKU 导入 --- */
-document.getElementById('skuUpload').onchange=e=>{
-  const file=e.target.files[0]; if(!file) return;
-  const r=new FileReader();
-  r.onload=ev=>{
+/* === 添加设备 === */
+$('#addDevice').onclick=()=>{
+  const tag=$('#d_tag').value.trim();
+  const serial=$('#d_serial').value.trim();
+  const upc=$('#d_upc').value.trim();
+  let device=$('#d_device').value.trim();
+  let capacity=$('#d_capacity').value.trim();
+  let color=$('#d_color').value.trim();
+
+  // 自动SKU匹配
+  if(upc && skuMap[upc]){
+    const s=skuMap[upc];
+    if(!device) device=s.device||'';
+    if(!capacity) capacity=s.capacity||'';
+    if(!color) color=s.color||'';
+  }
+
+  devices.push({tag,serial,upc,device,capacity,color,time:now()});
+  localStorage.setItem('devices',JSON.stringify(devices));
+  ['d_serial','d_upc','d_device','d_capacity','d_color'].forEach(id=>$('#'+id).value='');
+  renderDevices();
+};
+function renderDevices(){
+  const tb=$('#dBody');tb.innerHTML='';
+  devices.slice().reverse().forEach(r=>{
+    tb.innerHTML+=`<tr><td>${r.tag||'-'}</td><td>${r.serial}</td><td>${r.upc}</td>
+    <td>${r.device||''}</td><td>${r.capacity||''}</td><td>${r.color||''}</td><td>${r.time}</td></tr>`;
+  });
+}
+renderDevices();
+
+/* === SKU 映射导入 === */
+$('#skuUpload').onchange=e=>{
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
     const rows=ev.target.result.split(/\r?\n/);
     skuMap={};
-    rows.slice(1).forEach(line=>{
-      const [u,d,c,col]=line.split(',');
-      if(u) skuMap[u.trim()]={device:d,capacity:c,color:col};
+    rows.slice(1).forEach(r=>{
+      const [upc,dev,cap,col]=r.split(',');
+      if(upc)skuMap[upc.trim()]={device:dev,capacity:cap,color:col};
     });
     localStorage.setItem('skuMap',JSON.stringify(skuMap));
-    alert('SKU 映射已导入：'+Object.keys(skuMap).length+' 条');
+    alert('✅ SKU 映射导入成功，共 '+Object.keys(skuMap).length+' 条');
   };
-  r.readAsText(file);
+  reader.readAsText(file,'utf-8');
 };
-
-/* --- 导出/清空 --- */
-document.getElementById('exportAll').onclick=()=>{
-  let csv='type,tag,time,carrier/serial,number/upc,device,capacity,color\n';
-  trackingData.forEach(t=>{
-    csv+=`tracking,${t.tag},${fmt(t.time)},${t.carrier},${t.number},,,\n`;
-  });
-  deviceData.forEach(d=>{
-    csv+=`device,${d.tag},${fmt(d.time)},${d.serial},${d.upc},${d.device},${d.capacity},${d.color}\n`;
-  });
-  const blob=new Blob([csv],{type:'text/csv'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);a.download='scan_export.csv';a.click();
-};
-document.getElementById('clearAll').onclick=()=>{
-  if(confirm('确定清空所有数据？')){
-    trackingData=[];deviceData=[];save();renderSummary();
-  }
-};
-
-/* --- 汇总 --- */
-function renderSummary(){
-  const tb=document.querySelector('#summary tbody');tb.innerHTML='';
-  const tags=[...new Set([...trackingData.map(x=>x.tag),...deviceData.map(x=>x.tag)])];
-  tags.forEach(tag=>{
-    const trk=trackingData.filter(x=>x.tag===tag);
-    const dev=deviceData.filter(x=>x.tag===tag);
-    const all=[...trk,...dev].sort((a,b)=>a.time.localeCompare(b.time));
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${tag}</td>
-      <td>${trk.length}</td><td>${dev.length}</td>
-      <td class="muted">${all.length?fmt(all.slice(-1)[0].time):'-'}</td>`;
-    tb.appendChild(tr);
-  });
-}
-renderSummary();
-
-/* --- 兼容扫描枪：自动聚焦输入框 --- */
-document.addEventListener('keydown',()=>{
-  const trk=document.getElementById('tracking');
-  if(document.activeElement!==trk && !trk.value) trk.focus();
-});
 </script>
 </body>
 </html>
