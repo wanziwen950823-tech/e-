@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>扫码平台 v3.1 · 运单/设备/汇总/SKU/设置</title>
+<title>扫码平台 v3.2 · 运单 / 设备 / 汇总 / SKU</title>
 <style>
 :root{
   --bg:#0b0f14;--panel:#121822;--card:#0f1520;--muted:#98a2b3;--text:#e8eef6;--accent:#4cc9f0;--accent2:#7c5cff;--good:#16a34a;--warn:#f59e0b;--bad:#ef4444;--line:#223049;
@@ -57,23 +57,23 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 <body>
 <div class="wrap">
   <div class="title">
-    <div class="logo"></div><h1>扫码平台 v3.1</h1>
-    <span class="pill">本地运行 / 可部署到 GitHub Pages</span>
-    <span class="right">UPS/FedEx 严格校验 · FedEx尾12位 · SN 去重 · SKU匹配</span>
+    <div class="logo"></div><h1>扫码平台 v3.2</h1>
+    <span class="pill">本地运行 / GitHub Pages 可用</span>
+    <span class="right">UPS/FedEx · 尾 12 位 · SN 长度校验 · SKU 匹配 · 重复纠错</span>
   </div>
 
   <div class="tabs">
     <div class="tab active" data-tab="tracking">运单登记</div>
     <div class="tab" data-tab="device">设备登记</div>
     <div class="tab" data-tab="summary">汇总 / 明细</div>
-    <div class="tab" data-tab="sku">SKU 录入</div>
+    <div class="tab" data-tab="sku">SKU 映射</div>
     <div class="tab" data-tab="settings">设置</div>
   </div>
 
   <!-- 运单 -->
   <section id="panel-tracking" class="panel">
     <div class="head">
-      <h2>运单登记（UPS/FedEx 自动识别；FedEx 可选截取后12位）</h2>
+      <h2>运单登记（UPS / FedEx 自动识别；FedEx 支持长号，存尾 12 位）</h2>
       <div class="flex">
         <button class="btn sm" id="tExport">导出CSV</button>
         <label class="btn sm acc" for="tImport">导入CSV</label>
@@ -108,7 +108,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
   <!-- 设备 -->
   <section id="panel-device" class="panel hidden">
     <div class="head">
-      <h2>设备登记（SN ➜ 自动跳到 UPC；UPC 停顿自动入库并匹配 SKU）</h2>
+      <h2>设备登记（打 Tag → 序列号 → 自动跳 UPC → SKU 自动匹配）</h2>
       <div class="flex">
         <button class="btn sm" id="dExport">导出CSV</button>
         <label class="btn sm acc" for="dImport">导入CSV</label>
@@ -118,13 +118,13 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
     </div>
     <div class="form">
       <input id="d_tag" placeholder="标记（如 U1/U2）"/>
-      <input id="d_serial" placeholder="序列号（11 位 A-Z0-9）" class="mono"/>
+      <input id="d_serial" placeholder="序列号（11 位字母+数字）" class="mono"/>
       <input id="d_upc" placeholder="UPC（停顿自动入库）" class="mono"/>
       <input id="d_device" placeholder="Device（自动填）"/>
       <input id="d_capacity" placeholder="Capacity（自动填）"/>
       <input id="d_color" placeholder="Color（自动填）"/>
       <div class="full" style="display:flex;gap:8px;align-items:center;color:#9fb0c7;padding-top:0">
-        <span>提示：SN 长度或格式错误/重复 → 红色闪烁 + 错误音（可设置是否阻止）；UPC 重复仅黄闪提示，不阻止入库；未命中SKU黄闪提示。</span>
+        <span>提示：序列号长度错误/格式错误 ➜ 红色警报 + 错误音 & 停止写入；序列号重复可拦截；UPC 重复不再报警；未命中 SKU 仅黄色提示音。</span>
       </div>
     </div>
     <div class="stat">
@@ -142,23 +142,23 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
   <!-- 汇总 -->
   <section id="panel-summary" class="panel hidden">
     <div class="head">
-      <h2>汇总 / 明细（按 Tag 独立统计，天然关联：同 Tag 的运单与设备）</h2>
+      <h2>汇总 / 明细（同 Tag 关联运单 & 设备；支持明细展开）</h2>
       <div class="flex">
         <button class="btn sm" id="sumOpen">全部展开</button>
         <button class="btn sm" id="sumClose">全部收起</button>
-        <button class="btn sm good" id="btnExportReconcile">对账导出（设备为主，附带同 Tag 最近运单号）</button>
+        <button class="btn sm good" id="btnExportReconcile">对账导出（设备为主附同 Tag 最近运单号）</button>
       </div>
     </div>
     <div class="grid2">
       <div>
-        <div style="padding:10px 14px;color:#9fb0c7">运单汇总（UPS/FedEx/总数，▶ 展开查看明细）</div>
+        <div style="padding:10px 14px;color:#9fb0c7">运单汇总（按 Tag 统计 UPS/FedEx/总数，▶ 展开明细）</div>
         <table>
           <thead><tr><th>Tag</th><th>UPS</th><th>FedEx</th><th>总数</th><th>最近时间</th><th>操作</th></tr></thead>
           <tbody id="sumT"></tbody>
         </table>
       </div>
       <div>
-        <div style="padding:10px 14px;color:#9fb0c7">设备汇总（按 Device/Capacity/Color 聚合；▶ 展开看 SN/UPC）</div>
+        <div style="padding:10px 14px;color:#9fb0c7">设备汇总（按 Tag+机型+容量+颜色聚合；▶ 展开看 SN/UPC）</div>
         <table>
           <thead><tr><th>Tag</th><th>机型</th><th>容量</th><th>颜色</th><th>数量</th><th>操作</th></tr></thead>
           <tbody id="sumD"></tbody>
@@ -170,7 +170,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
   <!-- SKU -->
   <section id="panel-sku" class="panel hidden">
     <div class="head">
-      <h2>SKU 录入 / 查看（UPC → Device/Capacity/Color）</h2>
+      <h2>SKU 映射（UPC → Device / Capacity / Color）</h2>
       <div class="flex">
         <button class="btn sm" id="skuExport">导出CSV</button>
         <button class="btn sm bad" id="skuClear">清空映射</button>
@@ -185,10 +185,10 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
       <label class="btn acc" for="skuFile">导入CSV</label>
       <input id="skuFile" type="file" accept=".csv" class="hidden"/>
       <div class="full">
-        <textarea id="skuPaste" placeholder="从 Google 表格复制四列（UPC,Device,Capacity,Color）后粘贴到这里，每行一条"></textarea>
+        <textarea id="skuPaste" placeholder="从表格复制四列（UPC,Device,Capacity,Color）粘贴到这里，每行一条记录"></textarea>
       </div>
       <button class="btn" id="skuPasteBtn">从文本批量导入</button>
-      <div class="full" style="color:#9fb0c7">提示：重复 UPC 会覆盖更新；导入支持 CSV 或直接粘贴。</div>
+      <div class="full" style="color:#9fb0c7">重复 UPC 会覆盖更新；导入支持 CSV 或直接粘贴。</div>
     </div>
     <table>
       <thead><tr><th>UPC</th><th>Device</th><th>Capacity</th><th>Color</th><th>操作</th></tr></thead>
@@ -201,33 +201,34 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
     <div class="head"><h2>设置</h2></div>
     <div class="form">
       <label class="full" style="display:flex;gap:10px;align-items:center">
-        <input type="checkbox" id="setFedTail"> FedEx 仅保留后 12 位
+        <input type="checkbox" id="setFedTail" checked> FedEx 仅保留后 12 位（例如长号 ➜ 存尾 12 位）
       </label>
       <label class="full" style="display:flex;gap:10px;align-items:center">
-        <input type="checkbox" id="setBeep"> 启用提示音（成功/警告/错误）
+        <input type="checkbox" id="setBeep" checked> 启用提示音（成功/警告/错误）
       </label>
       <label class="full" style="display:flex;gap:10px;align-items:center">
-        <input type="checkbox" id="setBlockDupSN"> 序列号重复阻止保存（否则仅警告）</label>
+        <input type="checkbox" id="setBlockDupSN" checked> 序列号重复阻止保存（否则仅警告）
+      </label>
       <label class="full" style="display:flex;gap:10px;align-items:center">
-        <input type="checkbox" id="setAutoScan"> 启用“无回车自动入库”（扫描停止 ~180ms 自动保存）
+        <input type="checkbox" id="setAutoScan" checked> 启用“无回车自动入库”（扫描停止 ~180ms 自动保存）
       </label>
       <label class="full" style="display:flex;gap:10px;align-items:center">
         <input type="checkbox" id="setConfirmDel" checked> 删除前确认
       </label>
-      <div class="full" style="color:#9fb0c7">所有数据与设置均保存在本机浏览器 localStorage；可随时导出 CSV 备份。</div>
+      <div class="full" style="color:#9fb0c7">所有数据与设置均保存在本机浏览器 localStorage；可随时导出 CSV 进行备份。</div>
     </div>
   </section>
 
-  <div class="footer">© 扫码平台 v3.1 · 本地运行</div>
+  <div class="footer">© 扫码平台 v3.2 · 本地运行</div>
 </div>
 
 <script>
 /* ========== 存储 ========= */
-const storeKey='SCAN_PLATFORM_V31';
-const DB=load();
+const storeKey = 'SCAN_PLATFORM_V32';
+const DB = load();
 function load(){
   try{
-    const d=JSON.parse(localStorage.getItem(storeKey)||'{}');
+    const d = JSON.parse(localStorage.getItem(storeKey) || '{}');
     return Object.assign({
       settings:{fedTail:true,beep:true,blockDupSN:true,autoScan:true,confirmDel:true},
       tracking:[], // {id,tag,tracking,type,note,created_at}
@@ -237,31 +238,33 @@ function load(){
   }catch(e){
     return {
       settings:{fedTail:true,beep:true,blockDupSN:true,autoScan:true,confirmDel:true},
-      tracking:[],
-      device:[],
-      sku:{}
-    }
+      tracking:[],device:[],sku:{}
+    };
   }
 }
 function save(){ localStorage.setItem(storeKey,JSON.stringify(DB)); }
 
 /* ========== 小工具 ========= */
-const $=s=>document.querySelector(s);
-const el=(t,a={},h='')=>{
-  const n=document.createElement(t);
-  for(const k in a){k==='class'?n.className=a[k]:n.setAttribute(k,a[k])}
-  if(h)n.innerHTML=h;
+const $ = s => document.querySelector(s);
+const el = (t,a={},h='')=>{
+  const n = document.createElement(t);
+  for(const k in a){ k==='class' ? n.className=a[k] : n.setAttribute(k,a[k]); }
+  if(h) n.innerHTML=h;
   return n;
 };
-const now=()=> new Date().toLocaleString('zh-CN',{hour12:false});
+const now = () => new Date().toLocaleString('zh-CN',{hour12:false});
 function beep(kind='ok'){
   if(!DB.settings.beep) return;
-  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const C = window.AudioContext || window.webkitAudioContext;
+  if(!C) return;
+  const ctx=new C();
   const o=ctx.createOscillator(), g=ctx.createGain();
   o.type='sine';
-  o.frequency.value= kind==='ok'?880: kind==='warn'?440:220;
-  g.gain.value=0.05; o.connect(g); g.connect(ctx.destination);
-  o.start(); setTimeout(()=>{o.stop();ctx.close()},180);
+  o.frequency.value = kind==='ok'?880 : (kind==='warn'?440:220);
+  g.gain.value=0.05;
+  o.connect(g); g.connect(ctx.destination);
+  o.start();
+  setTimeout(()=>{o.stop();ctx.close();},180);
 }
 function flash(node, cls){
   if(!node) return;
@@ -273,7 +276,7 @@ function flash(node, cls){
 
 /* ========== Tab ========= */
 document.querySelectorAll('.tab').forEach(t=>{
-  t.addEventListener('click', ()=>{
+  t.addEventListener('click',()=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
     t.classList.add('active');
     const n=t.dataset.tab;
@@ -285,50 +288,32 @@ document.querySelectorAll('.tab').forEach(t=>{
   });
 });
 
-/* ========== 运单规范化 + 严格校验 ========= */
-/**
- * 规范化并校验运单号
- * raw: 用户输入
- * forceType: 'auto' | 'UPS' | 'FedEx'
- * opts.strict: true 时，格式不对直接返回 null
- * opts.node: 出错时闪烁的输入框
- */
-function normalizeTracking(raw, forceType, opts={}){
-  const strict = opts.strict!==false;
-  const node   = opts.node || null;
-
+/* ========== 运单识别 + 校验 ========= */
+function normalizeTracking(raw, forceType){
   let s=(raw||'').toUpperCase().trim().replace(/\s+/g,'');
-  if(!s) return null;
-
   let type='Unknown';
-  if(forceType && forceType!=='auto') type=forceType;
 
-  if(!forceType || forceType==='auto'){
-    if(/^1Z[0-9A-Z]{16}$/.test(s)) type='UPS';
-    else if(/^\d{12,22}$/.test(s)) type='FedEx';
+  if(forceType && forceType!=='auto'){
+    type=forceType;
   }
 
-  // 规则：
-  // UPS: 必须 1Z + 16 位（总 18）
-  // FedEx: 纯数字 12–22 位；开启“尾 12 位”时长度依旧 >=12
-  if(type==='UPS'){
-    if(!/^1Z[0-9A-Z]{16}$/.test(s)){
-      if(strict){ flash(node,'err'); beep('err'); }
-      return strict?null:{tracking:s,type:'Unknown'};
-    }
-  }else if(type==='FedEx'){
-    if(!/^\d{12,22}$/.test(s)){
-      if(strict){ flash(node,'err'); beep('err'); }
-      return strict?null:{tracking:s,type:'Unknown'};
-    }
-    if(DB.settings.fedTail && s.length>12){
-      s=s.slice(-12);
+  if(!forceType || forceType==='auto'){
+    if(/^1Z[0-9A-Z]{16}$/.test(s)){
+      type='UPS';
+    }else if(/^\d{12,40}$/.test(s)){   // 支持长 FedEx 号，最大 40 位
+      type='FedEx';
     }
   }else{
-    // 未识别类型（既不是 UPS 也不是 FedEx）
-    if(strict){
-      flash(node,'err'); beep('err');
-      return null;
+    if(forceType==='UPS' && /^1Z[0-9A-Z]{16}$/.test(s)){
+      type='UPS';
+    }else if(forceType==='FedEx' && /^\d{12,40}$/.test(s)){
+      type='FedEx';
+    }
+  }
+
+  if(type==='FedEx' && /^\d{12,40}$/.test(s)){
+    if(DB.settings.fedTail && s.length>12){
+      s = s.slice(-12);  // 保留尾 12 位
     }
   }
 
@@ -351,7 +336,7 @@ let tDeb;
 tInput.addEventListener('input',()=>{
   if(!DB.settings.autoScan) return;
   clearTimeout(tDeb);
-  tDeb=setTimeout(()=> addTracking(tInput.value,true),180);
+  tDeb=setTimeout(()=>addTracking(tInput.value,true),180);
 });
 tInput.addEventListener('keydown',e=>{
   if(e.key==='Enter') addTracking(tInput.value);
@@ -361,10 +346,25 @@ function addTracking(raw, fromAuto=false){
   raw=(raw||'').trim();
   if(!raw) return;
 
-  const norm = normalizeTracking(raw, tType.value, {strict:true,node:tInput});
-  if(!norm) return; // 格式不对，已报警并阻止写入
+  const {tracking,type} = normalizeTracking(raw, tType.value);
 
-  const {tracking,type}=norm;
+  // 基本合法性检查
+  if(type==='UPS'){
+    if(!/^1Z[0-9A-Z]{16}$/.test(tracking)){
+      flash(tInput,'err'); beep('err');
+      return;
+    }
+  }else if(type==='FedEx'){
+    if(!/^\d{12}$/.test(tracking)){ // 归一化后必须为 12 位纯数字
+      flash(tInput,'err'); beep('err');
+      return;
+    }
+  }else{
+    // 未识别的号码，直接报错
+    flash(tInput,'err'); beep('err');
+    return;
+  }
+
   DB.tracking.push({
     id:Date.now()+Math.random(),
     tag:tTag.value.trim(),
@@ -430,57 +430,54 @@ dSerial.addEventListener('keydown',e=>{
 let upcDeb;
 dUPC.addEventListener('input',()=>{
   const upc=dUPC.value.trim();
-  // 自动匹配 SKU
+  // SKU 自动匹配
   if(upc && DB.sku[upc]){
     const {device,capacity,color}=DB.sku[upc];
     dDev.value=device||''; dCap.value=capacity||''; dCol.value=color||'';
   }
   if(!DB.settings.autoScan) return;
   clearTimeout(upcDeb);
-  upcDeb=setTimeout(()=> addDevice(true),180);
+  upcDeb=setTimeout(()=>addDevice(true),180);
 });
 dUPC.addEventListener('keydown',e=>{
   if(e.key==='Enter') addDevice(false);
 });
 
 function addDevice(fromAuto){
-  const tag   = dTag.value.trim();
+  const tag=dTag.value.trim();
   const serial=(dSerial.value||'').trim().toUpperCase();
-  const upc   =(dUPC.value||'').trim();
+  const upc=(dUPC.value||'').trim();
 
   if(!serial && !upc){
     dSerial.focus(); return;
   }
 
-  // 1. 序列号格式严格校验：必须 11 位 A-Z0-9
+  // 序列号长度 + 格式校验：11 位字母数字
   if(serial){
-    if(!/^[0-9A-Z]{11}$/.test(serial)){
+    if(!/^[A-Z0-9]{11}$/.test(serial)){
       flash(dSerial,'err'); beep('err');
-      return; // 直接阻止写入
+      return;
     }
   }
 
-  // 2. 序列号重复检查
+  // 序列号重复检查
   if(serial){
-    const dup=DB.device.some(x=>x.serial===serial);
+    const dup = DB.device.some(x=>x.serial===serial);
     if(dup){
       flash(dSerial,'err'); beep('err');
-      if(DB.settings.blockDupSN) return; // 阻止写入
+      if(DB.settings.blockDupSN) return;
     }
   }
 
-  // 3. UPC 重复提示（不阻断）
-  if(upc && DB.device.some(x=>x.upc===upc)){
-    flash(dUPC,'warn'); beep('warn');
-  }
+  // UPC 重复：不再报警、不阻断
+  // if(upc && DB.device.some(x=>x.upc===upc)){ ... } // 已去掉警报逻辑
 
-  // 4. SKU 自动填充（若为空且命中）
+  // SKU 自动填充（若空且命中）
   if(upc && (!dDev.value && DB.sku[upc])){
     const s=DB.sku[upc];
     dDev.value=s.device||''; dCap.value=s.capacity||''; dCol.value=s.color||'';
   }
-
-  // 未命中 SKU 仅警告，不阻止
+  // 未命中 SKU：黄色提示音（不阻断）
   if(upc && !DB.sku[upc]){
     flash(dUPC,'warn'); beep('warn');
   }
@@ -496,7 +493,6 @@ function addDevice(fromAuto){
     status:'OK',
     created_at:now()
   });
-
   save();
   dSerial.value=''; dUPC.value='';
   dDev.value=''; dCap.value=''; dCol.value='';
@@ -511,7 +507,7 @@ function renderDevice(){
   $('#dCount').textContent=DB.device.length;
   $('#dUnique').textContent=uniq.size;
   $('#dTags').textContent=new Set(DB.device.map(x=>x.tag||'')).size;
-  $('#dLast').textContent=DB.device.length? DB.device[DB.device.length-1].created_at : '-';
+  $('#dLast').textContent=DB.device.length ? DB.device[DB.device.length-1].created_at : '-';
 
   DB.device.slice().reverse().forEach(r=>{
     const tr=el('tr');
@@ -547,7 +543,7 @@ function renderDevice(){
 renderDevice();
 
 /* ========== 汇总 / 明细 ========= */
-function groupBy(arr, keyFn){
+function groupBy(arr,keyFn){
   const m=new Map();
   arr.forEach(x=>{
     const k=keyFn(x);
@@ -560,7 +556,7 @@ function groupBy(arr, keyFn){
 function renderSummary(){
   // 运单
   const sumT=$('#sumT'); sumT.innerHTML='';
-  const gT=groupBy(DB.tracking, x=>x.tag||'');
+  const gT=groupBy(DB.tracking,x=>x.tag||'');
   [...gT.entries()].sort((a,b)=>(a[0]||'').localeCompare(b[0]||'')).forEach(([tag,arr])=>{
     const ups=arr.filter(x=>x.type==='UPS').length;
     const fed=arr.filter(x=>x.type==='FedEx').length;
@@ -582,7 +578,7 @@ function renderSummary(){
         arr.slice().reverse().forEach(r=>{
           const dr=el('tr',{class:'exp'});
           dr.innerHTML=`<td></td><td colspan="3"><span class="mono">${r.type}</span> · <span class="mono">${r.tracking}</span></td><td>${r.created_at}</td><td></td>`;
-          tr.parentNode.insertBefore(dr, tr.nextSibling);
+          tr.parentNode.insertBefore(dr,tr.nextSibling);
           rows.push(dr);
         });
       }else{
@@ -597,9 +593,9 @@ function renderSummary(){
 
   // 设备
   const sumD=$('#sumD'); sumD.innerHTML='';
-  const gD=groupBy(DB.device, x=>`${x.tag||''}||${x.device||''}||${x.capacity||''}||${x.color||''}`);
-  [...gD.entries()].sort((a,b)=>a[0].localeCompare(b[0])).forEach(([k,arr])=>{
-    const [tag,dev,cap,col]=k.split('||');
+  const gD=groupBy(DB.device,x=>(x.tag||'')+'||'+(x.device||'')+'||'+(x.capacity||'')+'||'+(x.color||''));
+  [...gD.entries()].sort((a,b)=>a[0].localeCompare(b[0])).forEach(([key,arr])=>{
+    const [tag,dev,cap,col]=key.split('||');
     const tr=el('tr');
     tr.appendChild(el('td',{},`<span class="chip mono">${tag||'-'}</span>`));
     tr.appendChild(el('td',{},dev||''));
@@ -617,7 +613,7 @@ function renderSummary(){
         arr.slice().reverse().forEach(r=>{
           const dr=el('tr',{class:'exp'});
           dr.innerHTML=`<td></td><td colspan="3">SN <span class="mono">${r.serial||'-'}</span> · UPC <span class="mono">${r.upc||'-'}</span></td><td>${r.created_at}</td><td></td>`;
-          tr.parentNode.insertBefore(dr, tr.nextSibling);
+          tr.parentNode.insertBefore(dr,tr.nextSibling);
           rows.push(dr);
         });
       }else{
@@ -632,41 +628,36 @@ function renderSummary(){
 }
 $('#sumOpen').onclick=()=>{
   renderSummary();
-  document.querySelectorAll('#sumT .btn, #sumD .btn').forEach(b=>{
+  document.querySelectorAll('#sumT .btn.sm, #sumD .btn.sm').forEach(b=>{
     if(b.textContent==='▶ 展开') b.click();
   });
 };
 $('#sumClose').onclick=()=>{ renderSummary(); };
 
-/* 对账导出：以设备为主，附带同 Tag 最近运单号 */
+/* 对账导出：以设备为主，附同 Tag 最近运单号 */
 $('#btnExportReconcile').onclick=()=>{
-  const trackByTag=groupBy(DB.tracking, x=>x.tag||'');
+  const trackByTag=groupBy(DB.tracking,x=>x.tag||'');
   const rows=[['Tag','Serial','UPC','Device','Capacity','Color','CreatedAt','Tracking(Tag最近一条)']];
   DB.device.forEach(d=>{
     const arr=trackByTag.get(d.tag||'')||[];
-    const last=arr.length? arr[arr.length-1].tracking : '';
+    const last=arr.length ? arr[arr.length-1].tracking : '';
     rows.push([
-      d.tag||'',
-      d.serial||'',
-      d.upc||'',
-      d.device||'',
-      d.capacity||'',
-      d.color||'',
-      d.created_at||'',
-      last
+      d.tag||'', d.serial||'', d.upc||'',
+      d.device||'', d.capacity||'', d.color||'',
+      d.created_at||'', last
     ]);
   });
-  downloadCSV('reconcile', rows);
+  downloadCSV('reconcile',rows);
 };
 
-/* ========== SKU 录入 ========= */
+/* ========== SKU 模块 ========= */
 const skuUpc=$('#sku_upc'), skuDev=$('#sku_device'),
       skuCap=$('#sku_capacity'), skuCol=$('#sku_color');
 
 $('#skuAdd').onclick=()=>{
   const upc=(skuUpc.value||'').trim();
   if(!upc) return;
-  DB.sku[upc]={
+  DB.sku[upc] = {
     device:skuDev.value.trim(),
     capacity:skuCap.value.trim(),
     color:skuCol.value.trim()
@@ -683,7 +674,7 @@ $('#skuFile').addEventListener('change',e=>{
     const lines=r.result.split(/\r?\n/).filter(x=>x.trim());
     lines.slice(1).forEach(row=>{
       const cols=row.split(',').map(x=>x?.replace(/^"|"$/g,'').replace(/""/g,'"').trim());
-      const [u,d,c,co]=cols;
+      const [u,d,c,co]=[cols[0],cols[1],cols[2],cols[3]];
       if(u) DB.sku[u]={device:d||'',capacity:c||'',color:co||''};
     });
     save(); renderSKU(); beep('ok'); e.target.value='';
@@ -707,9 +698,8 @@ $('#skuExport').onclick=()=>{
   Object.entries(DB.sku).forEach(([u,v])=>{
     rows.push([u,v.device||'',v.capacity||'',v.color||'']);
   });
-  downloadCSV('sku_map', rows);
+  downloadCSV('sku_map',rows);
 };
-
 $('#skuClear').onclick=()=>{
   if(!DB.settings.confirmDel || confirm('清空全部 SKU 映射？')){
     DB.sku={}; save(); renderSKU();
@@ -729,7 +719,8 @@ function renderSKU(){
     const del=el('button',{class:'btn sm bad'},'删除');
     del.onclick=()=>{
       if(!DB.settings.confirmDel || confirm('删除此 SKU？')){
-        delete DB.sku[row.upc]; save(); renderSKU();
+        delete DB.sku[row.upc];
+        save(); renderSKU();
       }
     };
     ops.appendChild(del);
@@ -738,14 +729,14 @@ function renderSKU(){
   });
 }
 
-/* ========== 导入导出通用 ========= */
+/* ========== 通用 CSV 导入导出 ========= */
 function toCSV(arr){
   return arr.map(r=>r.map(c=>{
     const s=(c==null?'':String(c));
     return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
   }).join(',')).join('\n');
 }
-function downloadCSV(name, rows){
+function downloadCSV(name,rows){
   const blob=new Blob(["\uFEFF"+toCSV(rows)],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');
   a.download=`${name}_${Date.now()}.csv`;
@@ -753,29 +744,19 @@ function downloadCSV(name, rows){
   a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),500);
 }
-
 function exportCSV(kind){
   if(kind==='tracking'){
     const rows=[['tag','tracking','type','note','created_at']];
     DB.tracking.forEach(r=>{
       rows.push([r.tag||'',r.tracking||'',r.type||'',r.note||'',r.created_at||'']);
     });
-    downloadCSV('tracking', rows);
+    downloadCSV('tracking',rows);
   }else{
     const rows=[['tag','serial','upc','device','capacity','color','status','created_at']];
     DB.device.forEach(r=>{
-      rows.push([
-        r.tag||'',
-        r.serial||'',
-        r.upc||'',
-        r.device||'',
-        r.capacity||'',
-        r.color||'',
-        r.status||'',
-        r.created_at||''
-      ]);
+      rows.push([r.tag||'',r.serial||'',r.upc||'',r.device||'',r.capacity||'',r.color||'',r.status||'',r.created_at||'']);
     });
-    downloadCSV('device', rows);
+    downloadCSV('device',rows);
   }
 }
 
@@ -784,27 +765,26 @@ function importCSV(evt,kind){
   const r=new FileReader();
   r.onload=()=>{
     const lines=r.result.split(/\r?\n/).filter(x=>x.trim());
-    const head=lines.shift().split(',').map(h=>h.replace(/^\uFEFF/,'')); // 暂未使用，但预留
-    const rows=lines.map(l=> l.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(s=>s.replace(/^"|"$/g,'').replace(/""/g,'"')));
-
-    if(kind==='tracking'){
-      rows.forEach(c=>{
-        const [tag,tracking,type,note,created_at]=c;
-        const norm=normalizeTracking(tracking, type && type!=='auto'?type:null, {strict:false});
-        if(!norm) return;
-        DB.tracking.push({
-          id:Date.now()+Math.random(),
-          tag:tag||'',
-          tracking:norm.tracking,
-          type:norm.type||'Unknown',
-          note:note||'',
-          created_at:created_at||now()
-        });
-      });
-      save(); renderTracking();
-    }else{
-      rows.forEach(c=>{
-        const [tag,serial,upc,device,capacity,color,status,created_at]=c;
+    lines.shift(); // 去掉表头
+    lines.forEach(l=>{
+      const cols=l.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(s=>s.replace(/^"|"$/g,'').replace(/""/g,'"'));
+      if(kind==='tracking'){
+        const [tag,tracking,type,note,created_at]=cols;
+        const norm=normalizeTracking(tracking, type==='auto'?'auto':type);
+        // 导入时也跑一次校验；校验不过的跳过
+        if(norm.type==='UPS' && /^1Z[0-9A-Z]{16}$/.test(norm.tracking) ||
+           norm.type==='FedEx' && /^\d{12}$/.test(norm.tracking)){
+          DB.tracking.push({
+            id:Date.now()+Math.random(),
+            tag:tag||'',
+            tracking:norm.tracking,
+            type:norm.type||'Unknown',
+            note:note||'',
+            created_at:created_at||now()
+          });
+        }
+      }else{
+        const [tag,serial,upc,device,capacity,color,status,created_at]=cols;
         DB.device.push({
           id:Date.now()+Math.random(),
           tag:tag||'',
@@ -816,9 +796,10 @@ function importCSV(evt,kind){
           status:status||'OK',
           created_at:created_at||now()
         });
-      });
-      save(); renderDevice();
-    }
+      }
+    });
+    save();
+    if(kind==='tracking') renderTracking(); else renderDevice();
     evt.target.value='';
   };
   r.readAsText(f,'utf-8');
@@ -849,8 +830,6 @@ function loadSettingsUI(){
   });
 });
 loadSettingsUI();
-
-/* 默认进入时已渲染 Tracking / Device */
 </script>
 </body>
 </html>
