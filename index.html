@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>天道扫码 v3.4 · 运单 / 设备 / 汇总 / SKU / 标签 / 设置</title>
+<title>天道扫码 v3.6 · 运单 / 设备 / 汇总 / SKU / 标签 / 设置</title>
 <style>
 :root{
   --bg:#0b0f14;--panel:#121822;--card:#0f1520;--muted:#98a2b3;--text:#e8eef6;--accent:#4cc9f0;--accent2:#7c5cff;--good:#16a34a;--warn:#f59e0b;--bad:#ef4444;--line:#223049;
@@ -69,14 +69,131 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 /* 标签管理表 */
 .tag-table thead th{font-size:12px}
 .tag-table tbody td{font-size:13px}
+
+/* v3.6 汇总 / 明细：8条预览 + 每日汇总 */
+
+.sum2-wrap{
+  border-top:1px dashed var(--line);
+  padding:10px 14px 16px;
+}
+.sum2-title{
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+.sum2{
+  display:flex;
+  gap:14px;
+}
+.sum2-col{
+  flex:1;
+}
+
+.sum-list-container{
+  height:260px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:var(--card);
+  padding:6px;
+  overflow:hidden;
+}
+.sum-list-scroll{
+  height:100%;
+  overflow-y:auto;
+  padding-right:6px;
+}
+.sum-list-row{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:5px;
+  padding:7px 8px;
+  border-radius:6px;
+  background:linear-gradient(180deg,#0c1320,#0a0f18);
+  border:1px solid #1e2a40;
+  font-size:12px;
+}
+.sum-list-row-main{
+  display:flex;
+  flex-direction:column;
+}
+.sum-list-row-tag{
+  font-size:12px;
+  opacity:0.9;
+}
+.sum-list-row-extra{
+  font-size:11px;
+  color:var(--muted);
+}
+.sum-list-row-right{
+  text-align:right;
+  font-size:11px;
+  color:var(--muted);
+}
+
+/* v3.6 每日汇总（按客户 + 型号 + 颜色 + 容量 + 数量） */
+.daily-summary-wrap{
+  border-top:1px dashed var(--line);
+  padding:10px 14px 16px;
+}
+.daily-summary-header{
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+.daily-summary-container{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.daily-day-block{
+  border-radius:10px;
+  border:1px solid #1e2a40;
+  background:var(--card);
+  padding:12px 14px;
+}
+.daily-day-title{
+  font-size:13px;
+  color:#cbd5f5;
+  margin-bottom:6px;
+}
+.daily-cus-block{
+  margin-top:6px;
+  padding:8px 10px;
+  border-radius:8px;
+  background:#0f1520;
+  border:1px solid #223049;
+}
+.daily-cus-title{
+  font-size:13px;
+  font-weight:600;
+  margin-bottom:4px;
+}
+.daily-item-row{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  padding:3px 0;
+  border-bottom:1px dashed #223049;
+}
+.daily-item-row:last-child{
+  border-bottom:none;
+}
+.daily-item-left{
+  max-width:75%;
+}
+.daily-item-right{
+  min-width:56px;
+  text-align:right;
+}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="title">
-    <div class="logo"></div><h1>天道扫码 v3.4</h1>
+    <div class="logo"></div><h1>天道扫码 v3.6</h1>
     <span class="pill">本地运行 / GitHub Pages 可用</span>
-    <span class="right">UPS/FedEx 自动识别 · FedEx 尾 12 位 · SN 去重纠错 · 标签管理</span>
+    <span class="right">UPS/FedEx 自动识别 · FedEx 尾 12 位 · SN 去重纠错 · 标签管理 · 每日汇总 v3.6</span>
   </div>
 
   <div class="tabs">
@@ -192,6 +309,33 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
         <tbody id="sumModel"></tbody>
       </table>
     </div>
+
+    <!-- v3.6 新增：今日明细预览（各 8 条） -->
+    <div class="sum2-wrap">
+      <div class="sum2-title" id="sumDailyTitle">今日明细预览（按 created_date · 仅显示 8 条，可滚动）</div>
+      <div class="sum2">
+        <div class="sum2-col">
+          <div class="sum2-title" id="sumDailyTrackTitle">运单号明细（仅显示 8 条，可滚动）</div>
+          <div class="sum-list-container">
+            <div class="sum-list-scroll" id="sumDailyTrack"></div>
+          </div>
+        </div>
+        <div class="sum2-col">
+          <div class="sum2-title" id="sumDailyDeviceTitle">设备登记明细（仅显示 8 条，可滚动）</div>
+          <div class="sum-list-container">
+            <div class="sum-list-scroll" id="sumDailyDevice"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- v3.6 新增：每日每客户每产品汇总 -->
+    <div class="daily-summary-wrap">
+      <div class="daily-summary-header" id="dailySummaryHeader">
+        每日汇总（按客户 + 型号 + 颜色 + 容量 + 数量）
+      </div>
+      <div class="daily-summary-container" id="dailySummaryBox"></div>
+    </div>
   </section>
 
   <!-- SKU -->
@@ -270,7 +414,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
     </div>
   </section>
 
-  <div class="footer">© 天道扫码 v3.4 · 本地运行</div>
+  <div class="footer">© 天道扫码 v3.6 · 本地运行</div>
 </div>
 
 <!-- 标签 datalist（运单 + 设备 共用） -->
@@ -739,7 +883,163 @@ function renderSummary(){
     tr.appendChild(el('td',{},String(arr.length)));
     sumM.appendChild(tr);
   });
+
+  // v3.6 新增：每日明细 + 每日汇总
+  renderDailySections();
 }
+
+/* v3.6：panel-summary 下方的“今日明细 8 条 + 每日汇总” */
+function renderDailySections(){
+  const boxTrack = $('#sumDailyTrack');
+  const boxDevice = $('#sumDailyDevice');
+  const dailyHeader = $('#dailySummaryHeader');
+  const dailyBox = $('#dailySummaryBox');
+  const titleAll = $('#sumDailyTitle');
+  const titleT = $('#sumDailyTrackTitle');
+  const titleD = $('#sumDailyDeviceTitle');
+  if(!boxTrack || !boxDevice || !dailyHeader || !dailyBox) return;
+
+  // 收集所有有数据的日期（created_date）
+  const dateSet = new Set();
+  DB.tracking.forEach(r=>{ if(r.created_date) dateSet.add(r.created_date); });
+  DB.device.forEach(r=>{ if(r.created_date) dateSet.add(r.created_date); });
+
+  const allDates = [...dateSet].sort(); // 升序
+  if(!allDates.length){
+    boxTrack.innerHTML = '<div style="font-size:12px;color:var(--muted);">暂无运单数据</div>';
+    boxDevice.innerHTML = '<div style="font-size:12px;color:var(--muted);">暂无设备数据</div>';
+    dailyHeader.textContent = '每日汇总（暂无数据）';
+    dailyBox.innerHTML = '';
+    if(titleAll) titleAll.textContent = '今日明细预览（暂无数据）';
+    return;
+  }
+
+  const today = new Date().toISOString().slice(0,10);
+  let targetDate = allDates[allDates.length-1];
+  if(dateSet.has(today)) targetDate = today; // 若今天有数据，就优先用今天
+
+  // 更新标题上的日期
+  if(titleAll)  titleAll.textContent  = `明细预览（日期：${targetDate} · 仅显示 8 条，可滚动）`;
+  if(titleT)    titleT.textContent    = `运单号明细（${targetDate} · 仅显示 8 条，可滚动）`;
+  if(titleD)    titleD.textContent    = `设备登记明细（${targetDate} · 仅显示 8 条，可滚动）`;
+  dailyHeader.textContent = `每日汇总（日期：${targetDate} · 按客户 + 型号 + 颜色 + 容量 + 数量）`;
+
+  /* 1）当天运单明细（8 条，最新在上） */
+  boxTrack.innerHTML = '';
+  const trackingToday = DB.tracking
+    .filter(r=>r.created_date===targetDate)
+    .slice().sort((a,b)=> (a.created_at||'').localeCompare(b.created_at||'')) // 时间升序
+    .reverse() // 最新在上
+    .slice(0,8);
+
+  if(!trackingToday.length){
+    boxTrack.innerHTML = '<div style="font-size:12px;color:var(--muted);">该日期没有运单记录</div>';
+  }else{
+    trackingToday.forEach(r=>{
+      const row = document.createElement('div');
+      row.className = 'sum-list-row';
+      row.innerHTML = `
+        <div class="sum-list-row-main">
+          <div class="sum-list-row-tag"><span class="chip mono">${r.tag||'-'}</span></div>
+          <div class="sum-list-row-extra"><span class="mono">${r.type}</span> · <span class="mono">${r.tracking}</span></div>
+        </div>
+        <div class="sum-list-row-right">
+          <div>${r.created_at||''}</div>
+        </div>
+      `;
+      boxTrack.appendChild(row);
+    });
+  }
+
+  /* 2）当天设备明细（8 条，最新在上） */
+  boxDevice.innerHTML = '';
+  const deviceToday = DB.device
+    .filter(r=>r.created_date===targetDate)
+    .slice().sort((a,b)=> (a.created_at||'').localeCompare(b.created_at||'')) // 时间升序
+    .reverse()
+    .slice(0,8);
+
+  if(!deviceToday.length){
+    boxDevice.innerHTML = '<div style="font-size:12px;color:var(--muted);">该日期没有设备记录</div>';
+  }else{
+    deviceToday.forEach(r=>{
+      const row = document.createElement('div');
+      row.className = 'sum-list-row';
+      row.innerHTML = `
+        <div class="sum-list-row-main">
+          <div class="sum-list-row-tag"><span class="chip mono">${r.tag||'-'}</span></div>
+          <div class="sum-list-row-extra">
+            ${(r.device||'') || '未填 Device'} · ${(r.color||'')} · ${(r.capacity||'')}
+          </div>
+        </div>
+        <div class="sum-list-row-right">
+          <div>${r.created_at||''}</div>
+          <div>${r.serial ? 'SN ' + r.serial : ''}</div>
+        </div>
+      `;
+      boxDevice.appendChild(row);
+    });
+  }
+
+  /* 3）当天每客户每产品汇总：按 tag → (device+capacity+color) 统计数量 */
+  dailyBox.innerHTML = '';
+  const devByTag = groupBy(deviceToday, x=>x.tag||'');
+  const dayBlock = document.createElement('div');
+  dayBlock.className = 'daily-day-block';
+
+  const dayTitle = document.createElement('div');
+  dayTitle.className = 'daily-day-title';
+  dayTitle.textContent = `日期：${targetDate}`;
+  dayBlock.appendChild(dayTitle);
+
+  if(!deviceToday.length){
+    const msg = document.createElement('div');
+    msg.style.fontSize = '12px';
+    msg.style.color = 'var(--muted)';
+    msg.textContent = '该日期没有设备记录，无法生成客户产品汇总。';
+    dayBlock.appendChild(msg);
+  }else{
+    [...devByTag.entries()].sort((a,b)=>(a[0]||'').localeCompare(b[0]||'','zh-CN')).forEach(([tag,arr])=>{
+      const cusBlock = document.createElement('div');
+      cusBlock.className = 'daily-cus-block';
+
+      // 按型号+容量+颜色分组
+      const gKey = groupBy(arr, x=>`${x.device||''}||${x.capacity||''}||${x.color||''}`);
+      let total = 0;
+      const items = [];
+      [...gKey.entries()].forEach(([k,rows])=>{
+        const [dev,cap,col] = k.split('||');
+        const qty = rows.length;
+        total += qty;
+        items.push({dev,cap,col,qty});
+      });
+
+      const title = document.createElement('div');
+      title.className = 'daily-cus-title';
+      title.textContent = `${tag||'-'}（总计：${total} 台）`;
+      cusBlock.appendChild(title);
+
+      items.sort((a,b)=> (a.dev||'').localeCompare(b.dev||'','zh-CN')).forEach(item=>{
+        const r = document.createElement('div');
+        r.className = 'daily-item-row';
+        const left = document.createElement('div');
+        left.className = 'daily-item-left';
+        left.textContent = `${item.dev||'未填 Device'} · ${item.col||''} · ${item.cap||''}`;
+        const right = document.createElement('div');
+        right.className = 'daily-item-right';
+        right.textContent = `${item.qty} 台`;
+        r.appendChild(left);
+        r.appendChild(right);
+        cusBlock.appendChild(r);
+      });
+
+      dayBlock.appendChild(cusBlock);
+    });
+  }
+
+  dailyBox.appendChild(dayBlock);
+}
+
 $('#sumOpen').onclick=()=>{
   renderSummary();
   document.querySelectorAll('#sumT .btn.sm, #sumD .btn.sm').forEach(b=>{
