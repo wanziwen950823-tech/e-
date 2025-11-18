@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>天道扫码 v3.4 · 运单 / 设备 / 汇总 / SKU / 标签 / 设置</title>
+<title>天道扫码 v3.6 · 运单 / 设备 / 汇总 / SKU / 标签 / 设置</title>
 <style>
 :root{
   --bg:#0b0f14;--panel:#121822;--card:#0f1520;--muted:#98a2b3;--text:#e8eef6;--accent:#4cc9f0;--accent2:#7c5cff;--good:#16a34a;--warn:#f59e0b;--bad:#ef4444;--line:#223049;
@@ -66,17 +66,151 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 .modal-body .box{border-radius:10px;border:1px solid #1f2937;background:#020617;padding:8px}
 .modal-footer{margin-top:10px;font-size:11px;color:#9ca3af}
 
-/* 标签管理表 */
+/* 标签管理表：增加滚动容器，显示约 10 条，可上下拉 */
 .tag-table thead th{font-size:12px}
 .tag-table tbody td{font-size:13px}
+.tag-table-wrap{
+  max-height:320px;
+  overflow:hidden;
+  margin:0 14px 14px;
+  border-radius:10px;
+  border:1px solid #1e2a40;
+  background:linear-gradient(180deg,#0b111c,#050814);
+}
+.tag-table-scroll{
+  height:100%;
+  overflow-y:auto;
+  padding-right:6px;
+}
+.tag-table-scroll::-webkit-scrollbar{width:6px}
+.tag-table-scroll::-webkit-scrollbar-track{background:#050814;border-radius:3px}
+.tag-table-scroll::-webkit-scrollbar-thumb{background:#2b364a;border-radius:3px}
+
+/* v3.6 汇总 / 明细：8条预览 + 每日汇总 */
+.sum2-wrap{
+  border-top:1px dashed var(--line);
+  padding:10px 14px 16px;
+}
+.sum2-title{
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+.sum2{
+  display:flex;
+  gap:14px;
+}
+.sum2-col{
+  flex:1;
+}
+.sum-list-container{
+  height:260px;
+  border-radius:10px;
+  border:1px solid var(--line);
+  background:var(--card);
+  padding:6px;
+  overflow:hidden;
+}
+.sum-list-scroll{
+  height:100%;
+  overflow-y:auto;
+  padding-right:6px;
+}
+.sum-list-scroll::-webkit-scrollbar{width:6px}
+.sum-list-scroll::-webkit-scrollbar-track{background:#050814;border-radius:3px}
+.sum-list-scroll::-webkit-scrollbar-thumb{background:#2b364a;border-radius:3px}
+.sum-list-row{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:5px;
+  padding:7px 8px;
+  border-radius:6px;
+  background:linear-gradient(180deg,#0c1320,#0a0f18);
+  border:1px solid #1e2a40;
+  font-size:12px;
+}
+.sum-list-row-main{
+  display:flex;
+  flex-direction:column;
+}
+.sum-list-row-tag{
+  font-size:12px;
+  opacity:0.9;
+}
+.sum-list-row-extra{
+  font-size:11px;
+  color:var(--muted);
+}
+.sum-list-row-right{
+  text-align:right;
+  font-size:11px;
+  color:var(--muted);
+}
+
+/* v3.6 每日汇总（按客户 + 型号 + 颜色 + 容量 + 数量） */
+.daily-summary-wrap{
+  border-top:1px dashed var(--line);
+  padding:10px 14px 16px;
+}
+.daily-summary-header{
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+.daily-summary-container{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.daily-day-block{
+  border-radius:10px;
+  border:1px solid #1e2a40;
+  background:var(--card);
+  padding:12px 14px;
+}
+.daily-day-title{
+  font-size:13px;
+  color:#cbd5f5;
+  margin-bottom:6px;
+}
+.daily-cus-block{
+  margin-top:6px;
+  padding:8px 10px;
+  border-radius:8px;
+  background:#0f1520;
+  border:1px solid #223049;
+}
+.daily-cus-title{
+  font-size:13px;
+  font-weight:600;
+  margin-bottom:4px;
+}
+.daily-item-row{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  padding:3px 0;
+  border-bottom:1px dashed #223049;
+}
+.daily-item-row:last-child{
+  border-bottom:none;
+}
+.daily-item-left{
+  max-width:75%;
+}
+.daily-item-right{
+  min-width:56px;
+  text-align:right;
+}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="title">
-    <div class="logo"></div><h1>天道扫码 v3.4</h1>
+    <div class="logo"></div><h1>天道扫码 v3.6</h1>
     <span class="pill">本地运行 / GitHub Pages 可用</span>
-    <span class="right">UPS/FedEx 自动识别 · FedEx 尾 12 位 · SN 去重纠错 · 标签管理</span>
+    <span class="right">UPS/FedEx 自动识别 · FedEx 尾 12 位 · SN 去重纠错 · 标签管理 · 每日汇总 v3.6</span>
   </div>
 
   <div class="tabs">
@@ -157,40 +291,43 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
     </table>
   </section>
 
-  <!-- 汇总 -->
+  <!-- 汇总：已改为只有“蓝色内容” -->
   <section id="panel-summary" class="panel hidden">
     <div class="head">
-      <h2>汇总 / 明细（按标签 + 按机型统计；支持按日期+标签导出）</h2>
+      <h2>汇总 / 明细（v3.6：每日 8 条 + 每客户汇总）</h2>
       <div class="flex">
-        <button class="btn sm" id="sumOpen">全部展开</button>
-        <button class="btn sm" id="sumClose">全部收起</button>
         <button class="btn sm acc" id="btnExportDay">按日期 + 标签导出</button>
         <button class="btn sm good" id="btnExportReconcile">对账导出（设备为主 + 同标签最近运单）</button>
       </div>
     </div>
-    <div class="grid2">
-      <div>
-        <div style="padding:10px 14px;color:#9fb0c7">运单汇总（按标签：UPS/FedEx/总数，▶ 展开查看明细）</div>
-        <table>
-          <thead><tr><th>Tag</th><th>UPS</th><th>FedEx</th><th>总数</th><th>最近时间</th><th>操作</th></tr></thead>
-          <tbody id="sumT"></tbody>
-        </table>
+
+    <!-- 今日明细：运单 + 设备 -->
+    <div class="sum2-wrap">
+      <div class="sum2-title" id="sumDailyTitle">
+        今日明细预览（自动识别 created_date · 每类仅显示 8 条，可滚动）
       </div>
-      <div>
-        <div style="padding:10px 14px;color:#9fb0c7">设备汇总（按 标签 + 机型 + 容量 + 颜色；▶ 展开看 SN/UPC）</div>
-        <table>
-          <thead><tr><th>Tag</th><th>机型</th><th>容量</th><th>颜色</th><th>数量</th><th>操作</th></tr></thead>
-          <tbody id="sumD"></tbody>
-        </table>
+      <div class="sum2">
+        <div class="sum2-col">
+          <div class="sum2-title" id="sumDailyTrackTitle">今日运单（8 条）</div>
+          <div class="sum-list-container">
+            <div class="sum-list-scroll" id="sumDailyTrack"></div>
+          </div>
+        </div>
+        <div class="sum2-col">
+          <div class="sum2-title" id="sumDailyDeviceTitle">今日设备（8 条）</div>
+          <div class="sum-list-container">
+            <div class="sum-list-scroll" id="sumDailyDevice"></div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div style="border-top:1px dashed #23334d;margin-top:4px;padding:10px 14px 12px">
-      <div style="margin-bottom:6px;color:#9fb0c7">按机型汇总（模式二：不分标签，只看机型 + 容量 + 颜色 总数量）</div>
-      <table>
-        <thead><tr><th>Device</th><th>Capacity</th><th>Color</th><th>数量</th></tr></thead>
-        <tbody id="sumModel"></tbody>
-      </table>
+    <!-- 每日汇总：按客户 + 型号 + 颜色 + 容量 + 数量 -->
+    <div class="daily-summary-wrap">
+      <div class="daily-summary-header" id="dailySummaryHeader">
+        每日汇总（自动识别 created_date · 按客户 + 型号 + 颜色 + 容量 + 数量）
+      </div>
+      <div class="daily-summary-container" id="dailySummaryBox"></div>
     </div>
   </section>
 
@@ -238,10 +375,16 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
         说明：这里维护可选标签列表。扫描运单/设备时，如果输入了新的标签，也会自动加入到标签列表（A+B+C+D）。
       </div>
     </div>
-    <table class="tag-table">
-      <thead><tr><th>标签</th><th>运单数量</th><th>设备数量</th><th>操作</th></tr></thead>
-      <tbody id="tagBody"></tbody>
-    </table>
+
+    <!-- 这里加滚动容器，只显示约 10 条，其他通过滚动查看 -->
+    <div class="tag-table-wrap">
+      <div class="tag-table-scroll">
+        <table class="tag-table">
+          <thead><tr><th>标签</th><th>运单数量</th><th>设备数量</th><th>操作</th></tr></thead>
+          <tbody id="tagBody"></tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
   <!-- 设置 -->
@@ -270,7 +413,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
     </div>
   </section>
 
-  <div class="footer">© 天道扫码 v3.4 · 本地运行</div>
+  <div class="footer">© 天道扫码 v3.6 · 本地运行</div>
 </div>
 
 <!-- 标签 datalist（运单 + 设备 共用） -->
@@ -378,6 +521,7 @@ function playVoice(kind, fallbackText){
   }
 }
 function flash(node, cls){
+  if(!node) return;
   node.classList.remove('warn','err'); void node.offsetWidth;
   node.classList.add(cls); setTimeout(()=>node.classList.remove(cls),700);
 }
@@ -389,7 +533,8 @@ document.querySelectorAll('.tab').forEach(t=>{
     t.classList.add('active');
     const n=t.dataset.tab;
     ['tracking','device','summary','sku','tags','settings'].forEach(id=>{
-      $('#panel-'+id).classList.toggle('hidden',id!==n);
+      const panel=$('#panel-'+id);
+      if(panel) panel.classList.toggle('hidden',id!==n);
     });
     if(n==='summary'){ renderSummary(); }
     if(n==='sku'){ renderSKU(); }
@@ -435,7 +580,8 @@ function allTagsFromData(){
   return [...set].sort((a,b)=>a.localeCompare(b,'zh-CN'));
 }
 function refreshTagDatalist(){
-  const dl=$('#tagList'); dl.innerHTML='';
+  const dl=$('#tagList'); if(!dl) return;
+  dl.innerHTML='';
   allTagsFromData().forEach(t=>{
     const opt=document.createElement('option');
     opt.value=t;
@@ -445,24 +591,27 @@ function refreshTagDatalist(){
 
 /* ========== 运单模块 ========= */
 const tTag=$('#t_tag'), tInput=$('#t_input'), tType=$('#t_type'), tNote=$('#t_note');
-$('#tFocus').onclick=()=>tInput.focus();
-$('#tAdd').onclick=()=>addTracking(tInput.value);
-$('#tClear').onclick=()=>{
+if($('#tFocus')) $('#tFocus').onclick=()=>tInput && tInput.focus();
+if($('#tAdd')) $('#tAdd').onclick=()=>addTracking(tInput.value);
+if($('#tClear')) $('#tClear').onclick=()=>{
   if(!DB.settings.confirmDel || confirm('确定清空全部运单？')){
     DB.tracking=[]; save(); renderTracking();
   }
 };
-$('#tExport').onclick=()=>exportCSVAll('tracking');
-$('#tImport').addEventListener('change',e=>importCSV(e,'tracking'));
+if($('#tExport')) $('#tExport').onclick=()=>exportCSVAll('tracking');
+const tImport=$('#tImport');
+if(tImport) tImport.addEventListener('change',e=>importCSV(e,'tracking'));
 let tDeb;
-tInput.addEventListener('input',()=>{
-  if(!DB.settings.autoScan) return;
-  clearTimeout(tDeb);
-  tDeb=setTimeout(()=>addTracking(tInput.value,true),180);
-});
-tInput.addEventListener('keydown',e=>{
-  if(e.key==='Enter') addTracking(tInput.value);
-});
+if(tInput){
+  tInput.addEventListener('input',()=>{
+    if(!DB.settings.autoScan) return;
+    clearTimeout(tDeb);
+    tDeb=setTimeout(()=>addTracking(tInput.value,true),180);
+  });
+  tInput.addEventListener('keydown',e=>{
+    if(e.key==='Enter') addTracking(tInput.value);
+  });
+}
 
 function addTracking(raw, fromAuto=false){
   raw=(raw||'').trim();
@@ -493,7 +642,8 @@ function addTracking(raw, fromAuto=false){
   if(!fromAuto) tInput.focus();
 }
 function renderTracking(){
-  const body=$('#tBody'); body.innerHTML='';
+  const body=$('#tBody'); if(!body) return;
+  body.innerHTML='';
   const ups=DB.tracking.filter(x=>x.type==='UPS').length;
   const fed=DB.tracking.filter(x=>x.type==='FedEx').length;
   $('#tUPS').textContent=ups;
@@ -525,33 +675,37 @@ function renderTracking(){
 const dTag=$('#d_tag'), dSerial=$('#d_serial'), dUPC=$('#d_upc'),
       dDev=$('#d_device'), dCap=$('#d_capacity'), dCol=$('#d_color');
 
-$('#dClear').onclick=()=>{
+if($('#dClear')) $('#dClear').onclick=()=>{
   if(!DB.settings.confirmDel || confirm('确定清空全部设备？')){
     DB.device=[]; save(); renderDevice(); renderSummary();
   }
 };
-$('#dExport').onclick=()=>exportCSVAll('device');
-$('#dImport').addEventListener('change',e=>importCSV(e,'device'));
+if($('#dExport')) $('#dExport').onclick=()=>exportCSVAll('device');
+const dImport=$('#dImport');
+if(dImport) dImport.addEventListener('change',e=>importCSV(e,'device'));
 
-dSerial.addEventListener('keydown',e=>{
-  if(e.key==='Enter'){ dUPC.focus(); }
-});
-
+if(dSerial){
+  dSerial.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){ dUPC.focus(); }
+  });
+}
 let upcDeb;
-dUPC.addEventListener('input',()=>{
-  const upc=dUPC.value.trim();
-  // SKU 自动匹配
-  if(upc && DB.sku[upc]){
-    const {device,capacity,color}=DB.sku[upc];
-    dDev.value=device||''; dCap.value=capacity||''; dCol.value=color||'';
-  }
-  if(!DB.settings.autoScan) return;
-  clearTimeout(upcDeb);
-  upcDeb=setTimeout(()=>addDevice(true),180);
-});
-dUPC.addEventListener('keydown',e=>{
-  if(e.key==='Enter'){ addDevice(false); }
-});
+if(dUPC){
+  dUPC.addEventListener('input',()=>{
+    const upc=dUPC.value.trim();
+    // SKU 自动匹配
+    if(upc && DB.sku[upc]){
+      const {device,capacity,color}=DB.sku[upc];
+      dDev.value=device||''; dCap.value=capacity||''; dCol.value=color||'';
+    }
+    if(!DB.settings.autoScan) return;
+    clearTimeout(upcDeb);
+    upcDeb=setTimeout(()=>addDevice(true),180);
+  });
+  dUPC.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){ addDevice(false); }
+  });
+}
 
 function isValidSerial(sn){
   return /^[0-9A-Z]{11}$/.test(sn);
@@ -615,7 +769,8 @@ function addDevice(fromAuto){
   dSerial.focus();
 }
 function renderDevice(){
-  const body=$('#dBody'); body.innerHTML='';
+  const body=$('#dBody'); if(!body) return;
+  body.innerHTML='';
   const uniq=new Set(DB.device.map(x=>x.serial).filter(Boolean));
   $('#dCount').textContent=DB.device.length;
   $('#dUnique').textContent=uniq.size;
@@ -650,107 +805,164 @@ function renderDevice(){
   });
 }
 
-/* ========== 汇总 / 明细 ========= */
-function groupBy(arr,keyFn){
-  const m=new Map();
-  arr.forEach(x=>{
-    const k=keyFn(x);
-    if(!m.has(k)) m.set(k,[]);
-    m.get(k).push(x);
-  });
-  return m;
-}
+/* ========== 汇总 / 明细：v3.6 仅蓝色内容 ========= */
 function renderSummary(){
-  // 运单汇总（按标签）
-  const sumT=$('#sumT'); sumT.innerHTML='';
-  const gT=groupBy(DB.tracking,x=>x.tag||'');
-  [...gT.entries()].sort((a,b)=>(a[0]||'').localeCompare(b[0]||'','zh-CN')).forEach(([tag,arr])=>{
-    const ups=arr.filter(x=>x.type==='UPS').length;
-    const fed=arr.filter(x=>x.type==='FedEx').length;
-    const last=arr[arr.length-1]?.created_at || '-';
-    const tr=el('tr');
-    tr.appendChild(el('td',{},`<span class="chip mono">${tag||'-'}</span>`));
-    tr.appendChild(el('td',{},String(ups)));
-    tr.appendChild(el('td',{},String(fed)));
-    tr.appendChild(el('td',{},String(arr.length)));
-    tr.appendChild(el('td',{},last));
-    const op=el('td');
-    const btn=el('button',{class:'btn sm'},'▶ 展开'); 
-    let open=false; let rows=[];
-    btn.onclick=()=>{
-      open=!open; btn.textContent=open?'▼ 收起':'▶ 展开';
-      if(open){
-        arr.slice().reverse().forEach(r=>{
-          const dr=el('tr',{class:'exp'});
-          dr.innerHTML=`<td></td><td colspan="3"><span class="mono">${r.type}</span> · <span class="mono">${r.tracking}</span></td><td>${r.created_at}</td><td></td>`;
-          tr.parentNode.insertBefore(dr,tr.nextSibling);
-          rows.push(dr);
-        });
-      }else{
-        rows.forEach(x=>x.remove()); rows=[];
-      }
-    };
-    op.appendChild(btn);
-    tr.appendChild(op);
-    sumT.appendChild(tr);
-  });
-
-  // 设备汇总（按 标签 + 机型 + 容量 + 颜色）
-  const sumD=$('#sumD'); sumD.innerHTML='';
-  const gD=groupBy(DB.device,x=>`${x.tag||''}||${x.device||''}||${x.capacity||''}||${x.color||''}`);
-  [...gD.entries()].sort((a,b)=>a[0].localeCompare(b[0],'zh-CN')).forEach(([k,arr])=>{
-    const [tag,dev,cap,col]=k.split('||');
-    const tr=el('tr');
-    tr.appendChild(el('td',{},`<span class="chip mono">${tag||'-'}</span>`));
-    tr.appendChild(el('td',{},dev||'')); 
-    tr.appendChild(el('td',{},cap||'')); 
-    tr.appendChild(el('td',{},col||'')); 
-    tr.appendChild(el('td',{},String(arr.length)));
-    const op=el('td');
-    const btn=el('button',{class:'btn sm'},'▶ 展开');
-    let open=false; let rows=[];
-    btn.onclick=()=>{
-      open=!open; btn.textContent=open?'▼ 收起':'▶ 展开';
-      if(open){
-        arr.slice().reverse().forEach(r=>{
-          const dr=el('tr',{class:'exp'});
-          dr.innerHTML=`<td></td><td colspan="3">SN <span class="mono">${r.serial||'-'}</span> · UPC <span class="mono">${r.upc||'-'}</span></td><td>${r.created_at}</td><td></td>`;
-          tr.parentNode.insertBefore(dr,tr.nextSibling);
-          rows.push(dr);
-        });
-      }else{
-        rows.forEach(x=>x.remove()); rows=[];
-      }
-    };
-    op.appendChild(btn);
-    tr.appendChild(op);
-    sumD.appendChild(tr);
-  });
-
-  // 按机型汇总（不分标签：Device + Capacity + Color）
-  const sumM=$('#sumModel'); sumM.innerHTML='';
-  const gM=groupBy(DB.device,x=>`${x.device||''}||${x.capacity||''}||${x.color||''}`);
-  [...gM.entries()].sort((a,b)=>a[0].localeCompare(b[0],'zh-CN')).forEach(([k,arr])=>{
-    const [dev,cap,col]=k.split('||');
-    const tr=el('tr');
-    tr.appendChild(el('td',{},dev||'')); 
-    tr.appendChild(el('td',{},cap||'')); 
-    tr.appendChild(el('td',{},col||'')); 
-    tr.appendChild(el('td',{},String(arr.length)));
-    sumM.appendChild(tr);
-  });
+  renderDailySections();
 }
-$('#sumOpen').onclick=()=>{
-  renderSummary();
-  document.querySelectorAll('#sumT .btn.sm, #sumD .btn.sm').forEach(b=>{
-    if(b.textContent==='▶ 展开') b.click();
+
+/* 今日明细 + 每客户汇总 */
+function renderDailySections(){
+  const boxTrack = $('#sumDailyTrack');
+  const boxDevice = $('#sumDailyDevice');
+  const dailyBox = $('#dailySummaryBox');
+  const titleAll = $('#sumDailyTitle');
+  const titleT = $('#sumDailyTrackTitle');
+  const titleD = $('#sumDailyDeviceTitle');
+  const header = $('#dailySummaryHeader');
+  if(!boxTrack || !boxDevice || !dailyBox) return;
+
+  const dateSet = new Set();
+  DB.tracking.forEach(r=>{ if(r.created_date) dateSet.add(r.created_date); });
+  DB.device.forEach(r=>{ if(r.created_date) dateSet.add(r.created_date); });
+  const allDates=[...dateSet].sort();
+  if(!allDates.length){
+    boxTrack.innerHTML='<div style="font-size:12px;color:var(--muted);">暂无运单数据</div>';
+    boxDevice.innerHTML='<div style="font-size:12px;color:var(--muted);">暂无设备数据</div>';
+    dailyBox.innerHTML='';
+    return;
+  }
+
+  const today=new Date().toISOString().slice(0,10);
+  let targetDate=allDates[allDates.length-1];
+  if(dateSet.has(today)) targetDate=today;
+
+  if(titleAll) titleAll.textContent=`今日明细预览（日期：${targetDate} · 每类仅显示 8 条，可滚动）`;
+  if(titleT)   titleT.textContent  =`今日运单（${targetDate} · 显示 8 条）`;
+  if(titleD)   titleD.textContent  =`今日设备（${targetDate} · 显示 8 条）`;
+  if(header)   header.textContent  =`每日汇总（日期：${targetDate} · 按客户 + 型号 + 颜色 + 容量 + 数量）`;
+
+  // 今日运单 8 条
+  boxTrack.innerHTML='';
+  const trackingToday = DB.tracking
+    .filter(r=>r.created_date===targetDate)
+    .slice()
+    .sort((a,b)=>(a.created_at||'').localeCompare(b.created_at||''))
+    .reverse()
+    .slice(0,8);
+
+  if(!trackingToday.length){
+    boxTrack.innerHTML='<div style="font-size:12px;color:var(--muted);">该日期没有运单记录</div>';
+  }else{
+    trackingToday.forEach(r=>{
+      const row=document.createElement('div');
+      row.className='sum-list-row';
+      row.innerHTML=`
+        <div class="sum-list-row-main">
+          <div class="sum-list-row-tag"><span class="chip mono">${r.tag||'-'}</span></div>
+          <div class="sum-list-row-extra">
+            ${r.type||''} · <span class="mono">${r.tracking||''}</span>
+          </div>
+        </div>
+        <div class="sum-list-row-right">${r.created_at||''}</div>
+      `;
+      boxTrack.appendChild(row);
+    });
+  }
+
+  // 今日设备 8 条
+  boxDevice.innerHTML='';
+  const deviceToday = DB.device
+    .filter(r=>r.created_date===targetDate)
+    .slice()
+    .sort((a,b)=>(a.created_at||'').localeCompare(b.created_at||''))
+    .reverse()
+    .slice(0,8);
+
+  if(!deviceToday.length){
+    boxDevice.innerHTML='<div style="font-size:12px;color:var(--muted);">该日期没有设备记录</div>';
+  }else{
+    deviceToday.forEach(r=>{
+      const row=document.createElement('div');
+      row.className='sum-list-row';
+      row.innerHTML=`
+        <div class="sum-list-row-main">
+          <div class="sum-list-row-tag"><span class="chip mono">${r.tag||'-'}</span></div>
+          <div class="sum-list-row-extra">
+            ${r.device||'未填 Device'} · ${r.capacity||''} · ${r.color||''}
+          </div>
+        </div>
+        <div class="sum-list-row-right">
+          ${r.created_at||''}<br>
+          ${r.serial ? 'SN '+r.serial : ''}
+        </div>
+      `;
+      boxDevice.appendChild(row);
+    });
+  }
+
+  // 每客户 + 每产品汇总
+  dailyBox.innerHTML='';
+  const groups=new Map();
+  deviceToday.forEach(r=>{
+    const tag=r.tag||'-';
+    const key=`${r.device||''}||${r.capacity||''}||${r.color||''}`;
+    if(!groups.has(tag)) groups.set(tag,{});
+    if(!groups.get(tag)[key]) groups.get(tag)[key]=0;
+    groups.get(tag)[key]+=1;
   });
-};
-$('#sumClose').onclick=()=>{ renderSummary(); };
+
+  const dayBlock=document.createElement('div');
+  dayBlock.className='daily-day-block';
+  const dayTitle=document.createElement('div');
+  dayTitle.className='daily-day-title';
+  dayTitle.textContent=`日期：${targetDate}`;
+  dayBlock.appendChild(dayTitle);
+
+  if(!deviceToday.length){
+    const msg=document.createElement('div');
+    msg.style.fontSize='12px';
+    msg.style.color='var(--muted)';
+    msg.textContent='该日期没有设备记录，无法生成客户产品汇总。';
+    dayBlock.appendChild(msg);
+  }else{
+    [...groups.entries()].sort((a,b)=>(a[0]||'').localeCompare(b[0]||'','zh-CN')).forEach(([tag,items])=>{
+      const cusBlock=document.createElement('div');
+      cusBlock.className='daily-cus-block';
+      const total=Object.values(items).reduce((a,b)=>a+b,0);
+      const title=document.createElement('div');
+      title.className='daily-cus-title';
+      title.textContent=`${tag}（总计：${total} 台）`;
+      cusBlock.appendChild(title);
+
+      Object.entries(items).forEach(([k,qty])=>{
+        const [dev,cap,col]=k.split('||');
+        const r=document.createElement('div');
+        r.className='daily-item-row';
+        const left=document.createElement('div');
+        left.className='daily-item-left';
+        left.textContent=`${dev||'未填 Device'} · ${col||''} · ${cap||''}`;
+        const right=document.createElement('div');
+        right.className='daily-item-right';
+        right.textContent=`${qty} 台`;
+        r.appendChild(left); r.appendChild(right);
+        cusBlock.appendChild(r);
+      });
+
+      dayBlock.appendChild(cusBlock);
+    });
+  }
+  dailyBox.appendChild(dayBlock);
+}
 
 /* 对账导出：以设备为主，附带同 Tag 最近运单号 */
-$('#btnExportReconcile').onclick=()=>{
-  const trackByTag=groupBy(DB.tracking,x=>x.tag||'');
+const btnRecon=$('#btnExportReconcile');
+if(btnRecon) btnRecon.onclick=()=>{
+  const trackByTag=new Map();
+  DB.tracking.forEach(x=>{
+    const key=x.tag||'';
+    if(!trackByTag.has(key)) trackByTag.set(key,[]);
+    trackByTag.get(key).push(x);
+  });
   const rows=[['tag','serial','upc','device','capacity','color','created_at','tracking_last_by_tag']];
   DB.device.forEach(d=>{
     const arr=trackByTag.get(d.tag||'')||[];
@@ -773,7 +985,7 @@ $('#btnExportReconcile').onclick=()=>{
 const skuUpc=$('#sku_upc'), skuDev=$('#sku_device'),
       skuCap=$('#sku_capacity'), skuCol=$('#sku_color');
 
-$('#skuAdd').onclick=()=>{
+if($('#skuAdd')) $('#skuAdd').onclick=()=>{
   const upc=(skuUpc.value||'').trim();
   if(!upc) return;
   DB.sku[upc]={
@@ -786,7 +998,8 @@ $('#skuAdd').onclick=()=>{
   beep('ok');
   renderSKU();
 };
-$('#skuFile').addEventListener('change',e=>{
+const skuFile=$('#skuFile');
+if(skuFile) skuFile.addEventListener('change',e=>{
   const f=e.target.files[0]; if(!f) return;
   const r=new FileReader();
   r.onload=()=>{
@@ -800,7 +1013,7 @@ $('#skuFile').addEventListener('change',e=>{
   };
   r.readAsText(f,'utf-8');
 });
-$('#skuPasteBtn').onclick=()=>{
+if($('#skuPasteBtn')) $('#skuPasteBtn').onclick=()=>{
   const txt=$('#skuPaste').value||'';
   if(!txt.trim()) return;
   txt.split(/\r?\n/).forEach(line=>{
@@ -811,20 +1024,21 @@ $('#skuPasteBtn').onclick=()=>{
   });
   save(); renderSKU(); beep('ok');
 };
-$('#skuExport').onclick=()=>{
+if($('#skuExport')) $('#skuExport').onclick=()=>{
   const rows=[['upc','device','capacity','color']];
   Object.entries(DB.sku).forEach(([u,v])=>{
     rows.push([u,v.device||'',v.capacity||'',v.color||'']);
   });
   downloadCSV('sku_map',rows);
 };
-$('#skuClear').onclick=()=>{
+if($('#skuClear')) $('#skuClear').onclick=()=>{
   if(!DB.settings.confirmDel || confirm('清空全部 SKU 映射？')){
     DB.sku={}; save(); renderSKU();
   }
 };
 function renderSKU(){
-  const body=$('#skuBody'); body.innerHTML='';
+  const body=$('#skuBody'); if(!body) return;
+  body.innerHTML='';
   const arr=Object.entries(DB.sku).map(([u,v])=>({upc:u,...v}))
     .sort((a,b)=>a.upc.localeCompare(b.upc));
   arr.forEach(row=>{
@@ -847,7 +1061,7 @@ function renderSKU(){
 }
 
 /* ========== 标签管理 ========= */
-$('#tagAdd').onclick=()=>{
+if($('#tagAdd')) $('#tagAdd').onclick=()=>{
   const t=($('#tagNew').value||'').trim();
   if(!t) return;
   if(!DB.tags.includes(t)) DB.tags.push(t);
@@ -856,10 +1070,11 @@ $('#tagAdd').onclick=()=>{
   refreshTagDatalist();
   renderTags();
 };
-$('#tagRefresh').onclick=()=>{ renderTags(); };
+if($('#tagRefresh')) $('#tagRefresh').onclick=()=>{ renderTags(); };
 
 function renderTags(){
-  const body=$('#tagBody'); body.innerHTML='';
+  const body=$('#tagBody'); if(!body) return;
+  body.innerHTML='';
   const tags=allTagsFromData();
   tags.forEach(tag=>{
     const tCount=DB.tracking.filter(r=>r.tag===tag).length;
@@ -992,14 +1207,15 @@ const setFedTail=$('#setFedTail'),
       setConfirm=$('#setConfirmDel');
 
 function loadSettingsUI(){
-  setFedTail.checked=!!DB.settings.fedTail;
-  setVoice.checked=!!DB.settings.voice;
-  setBeep.checked=!!DB.settings.beep;
-  setBlockDupSN.checked=!!DB.settings.blockDupSN;
-  setAutoScan.checked=!!DB.settings.autoScan;
-  setConfirm.checked=!!DB.settings.confirmDel;
+  if(setFedTail) setFedTail.checked=!!DB.settings.fedTail;
+  if(setVoice)   setVoice.checked=!!DB.settings.voice;
+  if(setBeep)    setBeep.checked=!!DB.settings.beep;
+  if(setBlockDupSN) setBlockDupSN.checked=!!DB.settings.blockDupSN;
+  if(setAutoScan)   setAutoScan.checked=!!DB.settings.autoScan;
+  if(setConfirm)    setConfirm.checked=!!DB.settings.confirmDel;
 }
 [setFedTail,setVoice,setBeep,setBlockDupSN,setAutoScan,setConfirm].forEach(inp=>{
+  if(!inp) return;
   inp.addEventListener('change',()=>{
     DB.settings.fedTail=setFedTail.checked;
     DB.settings.voice=setVoice.checked;
@@ -1020,18 +1236,20 @@ const exportModal=$('#exportModal'),
       expTagsDevice=$('#expTagsDevice');
 
 function openExportModal(){
-  // 默认日期：今天
+  if(!exportModal) return;
   const today=new Date().toISOString().slice(0,10);
-  expDate.value=today;
+  if(expDate) expDate.value=today;
   buildExportTagCheckboxes();
   exportModal.classList.remove('hidden');
   exportModal.classList.add('show');
 }
 function closeExportModal(){
+  if(!exportModal) return;
   exportModal.classList.remove('show');
   exportModal.classList.add('hidden');
 }
 function buildExportTagCheckboxes(){
+  if(!expTagsTracking || !expTagsDevice) return;
   expTagsTracking.innerHTML='';
   expTagsDevice.innerHTML='';
   const tags=allTagsFromData();
@@ -1053,11 +1271,13 @@ function buildExportTagCheckboxes(){
     expTagsDevice.appendChild(w2);
   });
 }
-$('#btnExportDay').onclick=()=>openExportModal();
-exportClose.onclick=()=>closeExportModal();
-exportBackdrop.onclick=()=>closeExportModal();
+const btnExportDay=$('#btnExportDay');
+if(btnExportDay) btnExportDay.onclick=()=>openExportModal();
+if(exportClose) exportClose.onclick=()=>closeExportModal();
+if(exportBackdrop) exportBackdrop.onclick=()=>closeExportModal();
 
-$('#btnExportTrackingDay').onclick=()=>{
+const btnExportTrackingDay=$('#btnExportTrackingDay');
+if(btnExportTrackingDay) btnExportTrackingDay.onclick=()=>{
   const date=expDate.value;
   if(!date){ alert('请先选择日期'); return; }
   const checked=[...expTagsTracking.querySelectorAll('input[type="checkbox"]:checked')].map(i=>i.dataset.tag);
@@ -1069,7 +1289,8 @@ $('#btnExportTrackingDay').onclick=()=>{
   });
   downloadCSV('tracking_'+date,rows);
 };
-$('#btnExportDeviceDay').onclick=()=>{
+const btnExportDeviceDay=$('#btnExportDeviceDay');
+if(btnExportDeviceDay) btnExportDeviceDay.onclick=()=>{
   const date=expDate.value;
   if(!date){ alert('请先选择日期'); return; }
   const checked=[...expTagsDevice.querySelectorAll('input[type="checkbox"]:checked')].map(i=>i.dataset.tag);
