@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>天道扫码 v3.4 · 运单 / 设备 / 汇总 / SKU / 标签 / 设置</title>
+<title>天道扫码 v3.6 · 运单 / 设备 / 汇总 / SKU / 标签 / 设置</title>
 <style>
 :root{
   --bg:#0b0f14;--panel:#121822;--card:#0f1520;--muted:#98a2b3;--text:#e8eef6;--accent:#4cc9f0;--accent2:#7c5cff;--good:#16a34a;--warn:#f59e0b;--bad:#ef4444;--line:#223049;
@@ -69,14 +69,193 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 /* 标签管理表 */
 .tag-table thead th{font-size:12px}
 .tag-table tbody td{font-size:13px}
+
+/* ======== v3.6 新增：固定列表窗口（运单 / 设备 / 标签） ======== */
+.list-window,
+.tracking-window{
+  border-radius:12px;
+  border:1px solid #1e293b;
+  background:linear-gradient(180deg,#0b1120,#020617);
+  box-shadow:0 12px 30px rgba(0,0,0,.45);
+  overflow:hidden;
+  margin:0 14px 14px;
+}
+.list-header-row,
+.tracking-header-row{
+  background:linear-gradient(180deg,#0f172a,#020617);
+}
+.list-header-row th,
+.tracking-header-row th{
+  font-size:12px;
+  font-weight:600;
+  color:#9ca3af;
+  padding:8px 12px;
+  text-align:left;
+}
+.list-body-wrapper,
+.tracking-body-wrapper{
+  max-height:480px; /* 约 10 行 */
+  overflow-y:auto;
+}
+.list-body-wrapper::-webkit-scrollbar,
+.tracking-body-wrapper::-webkit-scrollbar,
+.sum-body-wrapper::-webkit-scrollbar{
+  width:6px;
+}
+.list-body-wrapper::-webkit-scrollbar-track,
+.tracking-body-wrapper::-webkit-scrollbar-track,
+.sum-body-wrapper::-webkit-scrollbar-track{
+  background:#020617;
+}
+.list-body-wrapper::-webkit-scrollbar-thumb,
+.tracking-body-wrapper::-webkit-scrollbar-thumb,
+.sum-body-wrapper::-webkit-scrollbar-thumb{
+  background:#374151;
+  border-radius:3px;
+}
+.tracking-row td,
+.sum-row td{
+  padding:8px 12px;
+  border-top:1px solid #111827;
+  border-bottom:1px solid #020617;
+  font-size:13px;
+}
+
+/* 标签管理中用到的小按钮，可以继续使用 .btn sm，也可以用下面两个 */
+.btn-rename{
+  padding:4px 10px;
+  font-size:12px;
+  border-radius:999px;
+  border:1px solid #334155;
+  background:#020617;
+  color:#e5e7eb;
+  cursor:pointer;
+  margin-right:6px;
+}
+.btn-rename:hover{border-color:#3b82f6}
+.btn-del{
+  padding:4px 10px;
+  font-size:12px;
+  border-radius:999px;
+  border:1px solid #7f1d1d;
+  background:linear-gradient(180deg,#b91c1c,#7f1d1d);
+  color:#fee2e2;
+  cursor:pointer;
+}
+
+/* ======== v3.6 新增：汇总 / 明细筛选 + 窗口 ======== */
+.summary-filters{
+  margin:10px 14px 6px;
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid #1e293b;
+  background:#020617;
+}
+.filter-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  font-size:12px;
+  color:#cbd5f5;
+}
+.filter-group{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.filter-group input,
+.filter-group select{
+  height:28px;
+  border-radius:6px;
+  border:1px solid #273549;
+  background:#020617;
+  color:#e5e7eb;
+  padding:0 6px;
+  font-size:12px;
+}
+.filter-actions{
+  margin-left:auto;
+  flex-wrap:wrap;
+  display:flex;
+  gap:6px;
+}
+.btn-sm2{
+  border-radius:999px;
+  border:1px solid #273549;
+  background:#020617;
+  color:#cbd5f5;
+  font-size:11px;
+  padding:4px 8px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.btn-sm2:hover{border-color:#3b82f6}
+
+.sum-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin:8px 14px 18px;
+}
+.sum-box-head{
+  padding:8px 12px;
+  border-radius:10px 10px 0 0;
+  border:1px solid #1e293b;
+  border-bottom:none;
+  background:linear-gradient(180deg,#0f172a,#020617);
+  font-size:13px;
+  color:#cbd5f5;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.sum-badge{
+  font-size:11px;
+  color:#9ca3af;
+  border-radius:999px;
+  border:1px solid #273549;
+  padding:2px 6px;
+  background:#020617;
+}
+.sum-window{
+  border-radius:0 0 12px 12px;
+  border:1px solid #1e293b;
+  background:linear-gradient(180deg,#0b1120,#020617);
+  box-shadow:0 8px 24px rgba(0,0,0,.45);
+  overflow:hidden;
+}
+.sum-header-row{
+  background:#020617;
+}
+.sum-header-row th{
+  font-size:12px;
+  font-weight:600;
+  color:#9fb0c7;
+  padding:6px 10px;
+  text-align:left;
+}
+.sum-body-wrapper{
+  max-height:320px;
+  overflow-y:auto;
+}
+.sum-row{
+  background:linear-gradient(180deg,#020617,#020617);
+}
+.sum-model-title{
+  font-size:13px;
+  color:#9ca3af;
+  margin:0 14px 6px;
+}
+.footer hr{border:none;border-top:1px solid #1e293b;margin:20px 0 10px}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="title">
-    <div class="logo"></div><h1>天道扫码 v3.4</h1>
+    <div class="logo"></div><h1>天道扫码 v3.6</h1>
     <span class="pill">本地运行 / GitHub Pages 可用</span>
-    <span class="right">UPS/FedEx 自动识别 · FedEx 尾 12 位 · SN 去重纠错 · 标签管理</span>
+    <span class="right">UPS/FedEx 自动识别 · FedEx 尾 12 位 · SN 去重纠错 · 标签管理 · 汇总筛选导出</span>
   </div>
 
   <div class="tabs">
@@ -91,7 +270,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
   <!-- 运单 -->
   <section id="panel-tracking" class="panel">
     <div class="head">
-      <h2>运单登记（UPS / FedEx 自动识别；FedEx 保存尾 12 位；错误人声提示）</h2>
+      <h2>运单登记（UPS / FedEx 自动识别；FedEx 保存尾 12 位；错误+重复人声提示）</h2>
       <div class="flex">
         <button class="btn sm" id="tExport">导出全部运单 CSV</button>
         <label class="btn sm acc" for="tImport">导入CSV</label>
@@ -117,10 +296,27 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
       <div class="card"><div class="k">总计</div><div class="v" id="tCount">0</div></div>
       <div class="card"><div class="k">标签种类</div><div class="v" id="tTags">0</div></div>
     </div>
-    <table>
-      <thead><tr><th>标签</th><th>运单号</th><th>类型</th><th>时间</th><th>备注</th><th>操作</th></tr></thead>
-      <tbody id="tBody"></tbody>
-    </table>
+
+    <!-- v3.6 固定窗口列表 -->
+    <div class="tracking-window">
+      <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+        <thead>
+          <tr class="tracking-header-row">
+            <th style="width:140px;">标签</th>
+            <th>运单号</th>
+            <th style="width:80px;">类型</th>
+            <th style="width:180px;">时间</th>
+            <th>备注</th>
+            <th style="width:80px;">操作</th>
+          </tr>
+        </thead>
+      </table>
+      <div class="tracking-body-wrapper">
+        <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+          <tbody id="tBody"></tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
   <!-- 设备 -->
@@ -151,46 +347,146 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
       <div class="card"><div class="k">标签种类</div><div class="v" id="dTags">0</div></div>
       <div class="card"><div class="k">最近登记</div><div class="v" id="dLast">-</div></div>
     </div>
-    <table>
-      <thead><tr><th>标签</th><th>序列号</th><th>UPC</th><th>Device</th><th>Capacity</th><th>Color</th><th>时间</th><th>状态</th><th>操作</th></tr></thead>
-      <tbody id="dBody"></tbody>
-    </table>
+
+    <!-- 固定窗口设备列表 -->
+    <div class="tracking-window">
+      <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+        <thead>
+          <tr class="tracking-header-row">
+            <th style="width:120px;">标签</th>
+            <th style="width:130px;">序列号</th>
+            <th style="width:130px;">UPC</th>
+            <th>Device</th>
+            <th style="width:80px;">容量</th>
+            <th style="width:80px;">颜色</th>
+            <th style="width:170px;">时间</th>
+            <th style="width:70px;">状态</th>
+            <th style="width:80px;">操作</th>
+          </tr>
+        </thead>
+      </table>
+      <div class="tracking-body-wrapper">
+        <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+          <tbody id="dBody"></tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
   <!-- 汇总 -->
   <section id="panel-summary" class="panel hidden">
     <div class="head">
-      <h2>汇总 / 明细（按标签 + 按机型统计；支持按日期+标签导出）</h2>
+      <h2>汇总 / 明细（按标签 + 按机型统计；支持日期 / 标签 / 时间段筛选导出）</h2>
       <div class="flex">
-        <button class="btn sm" id="sumOpen">全部展开</button>
-        <button class="btn sm" id="sumClose">全部收起</button>
-        <button class="btn sm acc" id="btnExportDay">按日期 + 标签导出</button>
-        <button class="btn sm good" id="btnExportReconcile">对账导出（设备为主 + 同标签最近运单）</button>
-      </div>
-    </div>
-    <div class="grid2">
-      <div>
-        <div style="padding:10px 14px;color:#9fb0c7">运单汇总（按标签：UPS/FedEx/总数，▶ 展开查看明细）</div>
-        <table>
-          <thead><tr><th>Tag</th><th>UPS</th><th>FedEx</th><th>总数</th><th>最近时间</th><th>操作</th></tr></thead>
-          <tbody id="sumT"></tbody>
-        </table>
-      </div>
-      <div>
-        <div style="padding:10px 14px;color:#9fb0c7">设备汇总（按 标签 + 机型 + 容量 + 颜色；▶ 展开看 SN/UPC）</div>
-        <table>
-          <thead><tr><th>Tag</th><th>机型</th><th>容量</th><th>颜色</th><th>数量</th><th>操作</th></tr></thead>
-          <tbody id="sumD"></tbody>
-        </table>
+        <button class="btn sm acc" id="btnExportDay">按日期 + 标签导出（老模式）</button>
       </div>
     </div>
 
-    <div style="border-top:1px dashed #23334d;margin-top:4px;padding:10px 14px 12px">
-      <div style="margin-bottom:6px;color:#9fb0c7">按机型汇总（模式二：不分标签，只看机型 + 容量 + 颜色 总数量）</div>
-      <table>
-        <thead><tr><th>Device</th><th>Capacity</th><th>Color</th><th>数量</th></tr></thead>
-        <tbody id="sumModel"></tbody>
+    <!-- v3.6 汇总筛选条 -->
+    <div class="summary-filters">
+      <div class="filter-row">
+        <div class="filter-group">
+          <span>日期：</span>
+          <input type="date" id="sumDate" />
+        </div>
+        <div class="filter-group">
+          <span>客户 / 标签：</span>
+          <select id="sumTag">
+            <option value="">全部</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span>时间段：</span>
+          <input type="time" id="sumTimeFrom" />
+          <span>至</span>
+          <input type="time" id="sumTimeTo" />
+        </div>
+        <div class="filter-group filter-actions">
+          <button class="btn-sm2" id="sumApply">应用筛选</button>
+          <button class="btn-sm2" id="sumExportTracking">导出运单 CSV</button>
+          <button class="btn-sm2" id="sumExportDevice">导出设备 CSV</button>
+          <button class="btn-sm2" id="sumExportModel">导出机型汇总 CSV</button>
+          <button class="btn-sm2" id="sumExportReconcile">对账导出（设备为主）</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 上半：左 = 运单总汇；右 = 设备总汇 -->
+    <div class="sum-grid">
+      <div>
+        <div class="sum-box-head">
+          运单汇总（按标签：UPS / FedEx / 总数；▶ 展开查看明细）
+          <span class="sum-badge">同一窗口内滚动查看更多标签</span>
+        </div>
+        <div class="sum-window">
+          <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+            <thead>
+              <tr class="sum-header-row">
+                <th style="width:140px;">Tag</th>
+                <th style="width:70px;">UPS</th>
+                <th style="width:80px;">FedEx</th>
+                <th style="width:70px;">总数</th>
+                <th style="width:170px;">最近时间</th>
+                <th style="width:80px;">操作</th>
+              </tr>
+            </thead>
+          </table>
+          <div class="sum-body-wrapper">
+            <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+              <tbody id="sumT"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sum-box-head">
+          设备汇总（按 标签 + 机型 + 容量 + 颜色；▶ 展开看 SN / UPC）
+          <span class="sum-badge">同一窗口内滚动查看更多款式</span>
+        </div>
+        <div class="sum-window">
+          <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+            <thead>
+              <tr class="sum-header-row">
+                <th style="width:130px;">Tag</th>
+                <th>机型</th>
+                <th style="width:80px;">容量</th>
+                <th style="width:80px;">颜色</th>
+                <th style="width:70px;">数量</th>
+                <th style="width:80px;">操作</th>
+              </tr>
+            </thead>
+          </table>
+          <div class="sum-body-wrapper">
+            <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+              <tbody id="sumD"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 下半：按机型 + 颜色 + 容量 + 日期 汇总（不分标签） -->
+    <div class="sum-model-title">
+      按机型汇总（不分标签，只看 Device + 容量 + 颜色 + 数量；按天分开，可用上面的日期筛选）
+    </div>
+    <div class="sum-window" style="margin:0 14px 14px;">
+      <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+        <thead>
+          <tr class="sum-header-row">
+            <th>Device</th>
+            <th style="width:90px;">容量</th>
+            <th style="width:90px;">颜色</th>
+            <th style="width:70px;">数量</th>
+            <th style="width:110px;">日期</th>
+          </tr>
+        </thead>
       </table>
+      <div class="sum-body-wrapper">
+        <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+          <tbody id="sumModel"></tbody>
+        </table>
+      </div>
     </div>
   </section>
 
@@ -238,10 +534,25 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
         说明：这里维护可选标签列表。扫描运单/设备时，如果输入了新的标签，也会自动加入到标签列表（A+B+C+D）。
       </div>
     </div>
-    <table class="tag-table">
-      <thead><tr><th>标签</th><th>运单数量</th><th>设备数量</th><th>操作</th></tr></thead>
-      <tbody id="tagBody"></tbody>
-    </table>
+
+    <!-- v3.6 标签列表固定窗口 -->
+    <div class="tracking-window">
+      <table style="width:100%;border-collapse:collapse;border-spacing:0;" class="tag-table">
+        <thead>
+          <tr class="tracking-header-row">
+            <th style="width:260px;">标签</th>
+            <th style="width:120px;">运单数量</th>
+            <th style="width:120px;">设备数量</th>
+            <th style="width:140px;">操作</th>
+          </tr>
+        </thead>
+      </table>
+      <div class="tracking-body-wrapper">
+        <table style="width:100%;border-collapse:collapse;border-spacing:0;" class="tag-table">
+          <tbody id="tagBody"></tbody>
+        </table>
+      </div>
+    </div>
   </section>
 
   <!-- 设置 -->
@@ -270,13 +581,13 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
     </div>
   </section>
 
-  <div class="footer">© 天道扫码 v3.4 · 本地运行</div>
+  <div class="footer">© 天道扫码 v3.6 · 本地运行</div>
 </div>
 
 <!-- 标签 datalist（运单 + 设备 共用） -->
 <datalist id="tagList"></datalist>
 
-<!-- 导出弹窗：按日期 + 标签导出 -->
+<!-- 导出弹窗：按日期 + 标签导出（老模式保留） -->
 <div id="exportModal" class="modal hidden">
   <div class="modal-backdrop" id="exportBackdrop"></div>
   <div class="modal-content">
@@ -311,7 +622,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 
 <script>
 /* ========== 存储 ========= */
-const storeKey='TIANDAO_SCAN_V34';
+const storeKey='TIANDAO_SCAN_V34'; // 保持不变，兼容旧数据
 const DB=loadDB();
 function loadDB(){
   try{
@@ -359,7 +670,8 @@ function beep(kind='ok'){
 const VOICE_URLS={
   trackingErr:'voice_tracking_error_en_female.mp3',
   serialErr:'voice_serial_error_en_female.mp3',
-  dupSerial:'voice_duplicate_serial_en_female.mp3'
+  dupSerial:'voice_duplicate_serial_en_female.mp3',
+  dupTracking:'voice_duplicate_tracking_en_female.mp3' // v3.6 新增：运单重复
 };
 function speakTextEn(text){
   if(!('speechSynthesis' in window)) return;
@@ -435,7 +747,8 @@ function allTagsFromData(){
   return [...set].sort((a,b)=>a.localeCompare(b,'zh-CN'));
 }
 function refreshTagDatalist(){
-  const dl=$('#tagList'); dl.innerHTML='';
+  const dl=$('#tagList'); if(!dl) return;
+  dl.innerHTML='';
   allTagsFromData().forEach(t=>{
     const opt=document.createElement('option');
     opt.value=t;
@@ -449,7 +762,7 @@ $('#tFocus').onclick=()=>tInput.focus();
 $('#tAdd').onclick=()=>addTracking(tInput.value);
 $('#tClear').onclick=()=>{
   if(!DB.settings.confirmDel || confirm('确定清空全部运单？')){
-    DB.tracking=[]; save(); renderTracking();
+    DB.tracking=[]; save(); renderTracking(); renderSummary(); renderTags();
   }
 };
 $('#tExport').onclick=()=>exportCSVAll('tracking');
@@ -470,9 +783,20 @@ function addTracking(raw, fromAuto=false){
   const {tracking,type}=normalizeTracking(raw,tType.value);
   if(!tracking || !validTracking(tracking,type)){
     flash(tInput,'err');
+    beep('bad');
     playVoice('trackingErr','Tracking number error');
     return;
   }
+
+  // v3.6：运单号重复直接拦截，不保存
+  const dup=DB.tracking.some(x=>x.tracking===tracking);
+  if(dup){
+    flash(tInput,'err');
+    beep('bad');
+    playVoice('dupTracking','Duplicate tracking, not saved');
+    return;
+  }
+
   const tag=tTag.value.trim();
   const {created_at,created_date}=nowPair();
   DB.tracking.push({
@@ -490,6 +814,8 @@ function addTracking(raw, fromAuto=false){
   tNote.value='';
   beep('ok');
   renderTracking();
+  renderSummary();
+  renderTags();
   if(!fromAuto) tInput.focus();
 }
 function renderTracking(){
@@ -501,7 +827,7 @@ function renderTracking(){
   $('#tCount').textContent=DB.tracking.length;
   $('#tTags').textContent=new Set(DB.tracking.map(x=>x.tag||'')).size;
   DB.tracking.slice().reverse().forEach(r=>{
-    const tr=el('tr');
+    const tr=el('tr',{class:'tracking-row'});
     tr.appendChild(el('td',{},`<span class="chip mono">${r.tag||'-'}</span>`));
     tr.appendChild(el('td',{},`<span class="mono">${r.tracking}</span>`));
     tr.appendChild(el('td',{},r.type));
@@ -512,7 +838,7 @@ function renderTracking(){
     del.onclick=()=>{
       if(!DB.settings.confirmDel || confirm('删除该运单？')){
         DB.tracking=DB.tracking.filter(x=>x.id!==r.id);
-        save(); renderTracking(); renderSummary();
+        save(); renderTracking(); renderSummary(); renderTags();
       }
     };
     ops.appendChild(del);
@@ -527,7 +853,7 @@ const dTag=$('#d_tag'), dSerial=$('#d_serial'), dUPC=$('#d_upc'),
 
 $('#dClear').onclick=()=>{
   if(!DB.settings.confirmDel || confirm('确定清空全部设备？')){
-    DB.device=[]; save(); renderDevice(); renderSummary();
+    DB.device=[]; save(); renderDevice(); renderSummary(); renderTags();
   }
 };
 $('#dExport').onclick=()=>exportCSVAll('device');
@@ -566,6 +892,7 @@ function addDevice(fromAuto){
   // SN 校验：11 位字母+数字
   if(serial && !isValidSerial(serial)){
     flash(dSerial,'err');
+    beep('bad');
     playVoice('serialErr','Serial number error');
     return;
   }
@@ -574,6 +901,7 @@ function addDevice(fromAuto){
     const dup=DB.device.some(x=>x.serial===serial);
     if(dup){
       flash(dSerial,'err');
+      beep('bad');
       playVoice('dupSerial','Serial number duplicated');
       if(DB.settings.blockDupSN) return;
     }
@@ -612,6 +940,8 @@ function addDevice(fromAuto){
   dSerial.value=''; dUPC.value=''; dDev.value=''; dCap.value=''; dCol.value='';
   beep('ok');
   renderDevice();
+  renderSummary();
+  renderTags();
   dSerial.focus();
 }
 function renderDevice(){
@@ -623,7 +953,7 @@ function renderDevice(){
   $('#dLast').textContent=DB.device.length? DB.device[DB.device.length-1].created_at : '-';
 
   DB.device.slice().reverse().forEach(r=>{
-    const tr=el('tr');
+    const tr=el('tr',{class:'tracking-row'});
     tr.appendChild(el('td',{},`<span class="chip mono">${r.tag||'-'}</span>`));
     const sCell=el('td',{}, r.serial?`<span class="mono">${r.serial}</span>`:'-');
     if(r.serial && DB.device.filter(x=>x.serial===r.serial).length>1){
@@ -641,7 +971,7 @@ function renderDevice(){
     del.onclick=()=>{
       if(!DB.settings.confirmDel || confirm('删除该设备？')){
         DB.device=DB.device.filter(x=>x.id!==r.id);
-        save(); renderDevice(); renderSummary();
+        save(); renderDevice(); renderSummary(); renderTags();
       }
     };
     ops.appendChild(del);
@@ -660,15 +990,69 @@ function groupBy(arr,keyFn){
   });
   return m;
 }
+
+// 读取筛选条件
+function getSummaryFilters(){
+  const dateInput=$('#sumDate');
+  const tagSel=$('#sumTag');
+  const tf=$('#sumTimeFrom');
+  const tt=$('#sumTimeTo');
+  return {
+    date: dateInput && dateInput.value ? dateInput.value : '',
+    tag: tagSel ? (tagSel.value || '') : '',
+    timeFrom: tf && tf.value ? tf.value : '',
+    timeTo: tt && tt.value ? tt.value : ''
+  };
+}
+function passTimeFilter(created_at, f){
+  if(!created_at) return true;
+  // 抓 HH:MM
+  const m=created_at.match(/\d{2}:\d{2}/);
+  if(!m) return true;
+  const t=m[0];
+  if(f.timeFrom && t < f.timeFrom) return false;
+  if(f.timeTo && t > f.timeTo) return false;
+  return true;
+}
+function passSummaryFilter(r,f){
+  if(f.date && r.created_date!==f.date) return false;
+  if(f.tag && (r.tag||'')!==f.tag) return false;
+  if((f.timeFrom || f.timeTo) && !passTimeFilter(r.created_at||'',f)) return false;
+  return true;
+}
+// 填充筛选里的标签下拉
+function buildSummaryTagOptions(){
+  const sel=$('#sumTag'); if(!sel) return;
+  const prev=sel.value;
+  sel.innerHTML='';
+  const optAll=document.createElement('option');
+  optAll.value=''; optAll.textContent='全部';
+  sel.appendChild(optAll);
+  allTagsFromData().forEach(tag=>{
+    const o=document.createElement('option');
+    o.value=tag; o.textContent=tag;
+    sel.appendChild(o);
+  });
+  if(prev && [...sel.options].some(o=>o.value===prev)){
+    sel.value=prev;
+  }
+}
+
 function renderSummary(){
+  buildSummaryTagOptions();
+  const f=getSummaryFilters();
+
+  const trackingFiltered=DB.tracking.filter(r=>passSummaryFilter(r,f));
+  const deviceFiltered=DB.device.filter(r=>passSummaryFilter(r,f));
+
   // 运单汇总（按标签）
   const sumT=$('#sumT'); sumT.innerHTML='';
-  const gT=groupBy(DB.tracking,x=>x.tag||'');
+  const gT=groupBy(trackingFiltered,x=>x.tag||'');
   [...gT.entries()].sort((a,b)=>(a[0]||'').localeCompare(b[0]||'','zh-CN')).forEach(([tag,arr])=>{
     const ups=arr.filter(x=>x.type==='UPS').length;
     const fed=arr.filter(x=>x.type==='FedEx').length;
     const last=arr[arr.length-1]?.created_at || '-';
-    const tr=el('tr');
+    const tr=el('tr',{class:'sum-row'});
     tr.appendChild(el('td',{},`<span class="chip mono">${tag||'-'}</span>`));
     tr.appendChild(el('td',{},String(ups)));
     tr.appendChild(el('td',{},String(fed)));
@@ -697,10 +1081,10 @@ function renderSummary(){
 
   // 设备汇总（按 标签 + 机型 + 容量 + 颜色）
   const sumD=$('#sumD'); sumD.innerHTML='';
-  const gD=groupBy(DB.device,x=>`${x.tag||''}||${x.device||''}||${x.capacity||''}||${x.color||''}`);
+  const gD=groupBy(deviceFiltered,x=>`${x.tag||''}||${x.device||''}||${x.capacity||''}||${x.color||''}`);
   [...gD.entries()].sort((a,b)=>a[0].localeCompare(b[0],'zh-CN')).forEach(([k,arr])=>{
     const [tag,dev,cap,col]=k.split('||');
-    const tr=el('tr');
+    const tr=el('tr',{class:'sum-row'});
     tr.appendChild(el('td',{},`<span class="chip mono">${tag||'-'}</span>`));
     tr.appendChild(el('td',{},dev||'')); 
     tr.appendChild(el('td',{},cap||'')); 
@@ -727,29 +1111,59 @@ function renderSummary(){
     sumD.appendChild(tr);
   });
 
-  // 按机型汇总（不分标签：Device + Capacity + Color）
+  // 按机型 + 日期 汇总（不分标签：Device + Capacity + Color + Date）
   const sumM=$('#sumModel'); sumM.innerHTML='';
-  const gM=groupBy(DB.device,x=>`${x.device||''}||${x.capacity||''}||${x.color||''}`);
+  const gM=groupBy(deviceFiltered,x=>`${x.device||''}||${x.capacity||''}||${x.color||''}||${x.created_date||''}`);
   [...gM.entries()].sort((a,b)=>a[0].localeCompare(b[0],'zh-CN')).forEach(([k,arr])=>{
-    const [dev,cap,col]=k.split('||');
-    const tr=el('tr');
+    const [dev,cap,col,date]=k.split('||');
+    const tr=el('tr',{class:'sum-row'});
     tr.appendChild(el('td',{},dev||'')); 
     tr.appendChild(el('td',{},cap||'')); 
     tr.appendChild(el('td',{},col||'')); 
     tr.appendChild(el('td',{},String(arr.length)));
+    tr.appendChild(el('td',{},date||'')); 
     sumM.appendChild(tr);
   });
 }
-$('#sumOpen').onclick=()=>{
-  renderSummary();
-  document.querySelectorAll('#sumT .btn.sm, #sumD .btn.sm').forEach(b=>{
-    if(b.textContent==='▶ 展开') b.click();
-  });
-};
-$('#sumClose').onclick=()=>{ renderSummary(); };
 
-/* 对账导出：以设备为主，附带同 Tag 最近运单号 */
-$('#btnExportReconcile').onclick=()=>{
+// 筛选按钮 + 导出（基于当前筛选）
+$('#sumApply').onclick=()=>renderSummary();
+
+function exportSummaryTracking(){
+  const f=getSummaryFilters();
+  const rows=[['tag','tracking','type','note','created_at','created_date']];
+  DB.tracking.forEach(r=>{
+    if(!passSummaryFilter(r,f)) return;
+    rows.push([r.tag||'',r.tracking||'',r.type||'',r.note||'',r.created_at||'',r.created_date||'']);
+  });
+  downloadCSV('tracking_summary_'+(f.date||'all'),rows);
+}
+function exportSummaryDevice(){
+  const f=getSummaryFilters();
+  const rows=[['tag','serial','upc','device','capacity','color','status','created_at','created_date']];
+  DB.device.forEach(r=>{
+    if(!passSummaryFilter(r,f)) return;
+    rows.push([r.tag||'',r.serial||'',r.upc||'',r.device||'',r.capacity||'',r.color||'',r.status||'',r.created_at||'',r.created_date||'']);
+  });
+  downloadCSV('device_summary_'+(f.date||'all'),rows);
+}
+function exportSummaryModel(){
+  const f=getSummaryFilters();
+  const devFiltered=DB.device.filter(r=>passSummaryFilter(r,f));
+  const g=groupBy(devFiltered,x=>`${x.device||''}||${x.capacity||''}||${x.color||''}||${x.created_date||''}`);
+  const rows=[['device','capacity','color','count','created_date']];
+  [...g.entries()].forEach(([k,arr])=>{
+    const [dev,cap,col,date]=k.split('||');
+    rows.push([dev||'',cap||'',col||'',String(arr.length),date||'']);
+  });
+  downloadCSV('device_model_summary_'+(f.date||'all'),rows);
+}
+$('#sumExportTracking').onclick=exportSummaryTracking;
+$('#sumExportDevice').onclick=exportSummaryDevice;
+$('#sumExportModel').onclick=exportSummaryModel;
+
+/* 对账导出：以设备为主，附带同 Tag 最近运单号（保留） */
+function doExportReconcile(){
   const trackByTag=groupBy(DB.tracking,x=>x.tag||'');
   const rows=[['tag','serial','upc','device','capacity','color','created_at','tracking_last_by_tag']];
   DB.device.forEach(d=>{
@@ -767,7 +1181,8 @@ $('#btnExportReconcile').onclick=()=>{
     ]);
   });
   downloadCSV('reconcile',rows);
-};
+}
+$('#sumExportReconcile').onclick=doExportReconcile;
 
 /* ========== SKU 录入 ========= */
 const skuUpc=$('#sku_upc'), skuDev=$('#sku_device'),
@@ -864,7 +1279,7 @@ function renderTags(){
   tags.forEach(tag=>{
     const tCount=DB.tracking.filter(r=>r.tag===tag).length;
     const dCount=DB.device.filter(r=>r.tag===tag).length;
-    const tr=el('tr');
+    const tr=el('tr',{class:'tracking-row'});
     tr.appendChild(el('td',{},`<span class="chip mono">${tag}</span>`));
     tr.appendChild(el('td',{},String(tCount)));
     tr.appendChild(el('td',{},String(dCount)));
@@ -978,6 +1393,7 @@ function importCSV(evt,kind){
     if(kind==='tracking'){ renderTracking(); }
     else{ renderDevice(); }
     renderSummary();
+    renderTags();
     evt.target.value='';
   };
   r.readAsText(f,'utf-8');
@@ -1020,7 +1436,6 @@ const exportModal=$('#exportModal'),
       expTagsDevice=$('#expTagsDevice');
 
 function openExportModal(){
-  // 默认日期：今天
   const today=new Date().toISOString().slice(0,10);
   expDate.value=today;
   buildExportTagCheckboxes();
@@ -1090,6 +1505,12 @@ renderSummary();
 renderSKU();
 renderTags();
 loadSettingsUI();
+
+// 汇总默认日期设为今天（你也可以手动改为空查看所有天）
+const sumDateInput=$('#sumDate');
+if(sumDateInput){
+  sumDateInput.value=new Date().toISOString().slice(0,10);
+}
 </script>
 </body>
 </html>
