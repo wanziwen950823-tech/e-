@@ -1,1564 +1,1516 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <title>登记平台 v3.7</title>
-  <style>
-    :root {
-      --bg: #020617;
-      --panel-bg: #020617;
-      --border: #1f2937;
-      --accent: #3b82f6;
-      --accent-soft: #1d4ed8;
-      --text-main: #e5e7eb;
-      --text-sub: #9ca3af;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-        "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
-      background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
-      color: var(--text-main);
-    }
-
-    .app {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-
-    .app-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .app-title {
-      font-size: 18px;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-    }
-
-    .app-date {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--text-sub);
-    }
-
-    .app-date input {
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid #374151;
-      background: #020617;
-      color: var(--text-main);
-      font-size: 13px;
-      outline: none;
-    }
-
-    .app-date input:focus {
-      border-color: var(--accent);
-    }
-
-    /* 顶部提示条 */
-    .message-bar {
-      position: fixed;
-      left: 50%;
-      top: 12px;
-      transform: translateX(-50%);
-      padding: 6px 16px;
-      border-radius: 999px;
-      font-size: 13px;
-      z-index: 9999;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s ease-out;
-      white-space: nowrap;
-    }
-
-    .message-bar.error {
-      background: #b91c1c;
-      color: #fef2f2;
-    }
-
-    .message-bar.success {
-      background: #16a34a;
-      color: #ecfdf5;
-    }
-
-    /* 顶部 tab */
-    .tab-bar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .tab-btn {
-      padding: 6px 18px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background: #020617;
-      color: var(--text-sub);
-      font-size: 13px;
-      cursor: pointer;
-      outline: none;
-      transition: all 0.15s ease-out;
-    }
-
-    .tab-btn:hover {
-      border-color: #4b5563;
-      color: var(--text-main);
-    }
-
-    .tab-btn.active {
-      background: var(--accent);
-      border-color: var(--accent);
-      color: #fff;
-      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.45);
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    /* 通用 Panel */
-    .panel {
-      background: var(--panel-bg);
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
-      padding: 14px;
-    }
-
-    .panel-header {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-sub);
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .panel-main {
-      display: flex;
-      gap: 14px;
-    }
-
-    .form-section {
-      flex: 0 0 320px;
-      border-radius: 10px;
-      border: 1px solid #111827;
-      padding: 10px 10px 12px;
-      background: #020617;
-    }
-
-    .table-section {
-      flex: 1;
-      border-radius: 10px;
-      border: 1px solid #111827;
-      background: #020617;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .table-section-header {
-      padding: 8px 10px;
-      font-size: 12px;
-      color: var(--text-sub);
-      border-bottom: 1px solid #111827;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .table-scroll {
-      flex: 1;
-      overflow: auto;
-    }
-
-    .form-row {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-bottom: 8px;
-      font-size: 13px;
-    }
-
-    .form-row-inline {
-      display: flex;
-      gap: 8px;
-    }
-
-    .form-row label {
-      color: var(--text-sub);
-      font-size: 12px;
-    }
-
-    .form-row input,
-    .form-row select {
-      padding: 6px 9px;
-      border-radius: 8px;
-      border: 1px solid #1f2937;
-      background: #020617;
-      color: var(--text-main);
-      font-size: 13px;
-      outline: none;
-    }
-
-    .form-row input:focus,
-    .form-row select:focus {
-      border-color: var(--accent);
-    }
-
-    .btn-primary,
-    .btn-secondary,
-    .btn-light {
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-size: 13px;
-      cursor: pointer;
-      border: none;
-      outline: none;
-      white-space: nowrap;
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-    }
-
-    .btn-primary:hover {
-      background: var(--accent-soft);
-    }
-
-    .btn-secondary {
-      background: #111827;
-      color: #e5e7eb;
-      border: 1px solid #374151;
-    }
-
-    .btn-secondary:hover {
-      background: #1f2937;
-    }
-
-    .btn-light {
-      background: #020617;
-      color: var(--text-sub);
-      border: 1px dashed #374151;
-    }
-
-    .btn-light:hover {
-      border-style: solid;
-      color: var(--text-main);
-    }
-
-    /* 表格 */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-
-    thead {
-      background: #020617;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    th,
-    td {
-      padding: 4px 8px;
-      border-bottom: 1px solid #050816;
-      text-align: left;
-      white-space: nowrap;
-    }
-
-    th {
-      color: var(--text-sub);
-      font-weight: 500;
-      font-size: 11px;
-    }
-
-    tbody tr:nth-child(even) {
-      background: #020617;
-    }
-
-    tbody tr:nth-child(odd) {
-      background: #02051a;
-    }
-
-    tbody tr:hover {
-      background: rgba(59, 130, 246, 0.09);
-    }
-
-    .table-action {
-      font-size: 11px;
-      color: #f97316;
-      cursor: pointer;
-    }
-
-    /* 汇总页 */
-    .summary-cards {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
-    }
-
-    .summary-card {
-      flex: 1;
-      border-radius: 12px;
-      border: 1px solid #111827;
-      background: #020617;
-      padding: 10px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .summary-card-label {
-      font-size: 12px;
-      color: var(--text-sub);
-    }
-
-    .summary-card-value {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .summary-section {
-      margin-top: 8px;
-      border-radius: 12px;
-      border: 1px solid #111827;
-      background: #020617;
-      padding: 10px 10px 12px;
-    }
-
-    .summary-section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      font-size: 13px;
-      color: var(--text-sub);
-    }
-
-    /* ===== 按标签导出弹窗（蓝色框 + 红色框） ===== */
-    .export-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9998;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .export-modal {
-      background: #111827;
-      border-radius: 12px;
-      width: 920px;
-      max-width: 96vw;
-      height: 80vh;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid #1f2937;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8);
-    }
-
-    .export-header {
-      display: flex;
-      align-items: center;
-      padding: 12px 16px;
-      border-bottom: 1px solid #1f2937;
-      background: #020617;
-    }
-
-    .export-title {
-      font-size: 14px;
-      font-weight: 500;
-      margin-right: 16px;
-    }
-
-    .export-date {
-      font-size: 13px;
-      color: var(--text-sub);
-    }
-
-    .export-date span {
-      margin-left: 6px;
-    }
-
-    .export-header-spacer {
-      flex: 1;
-    }
-
-    .export-close {
-      border: none;
-      background: transparent;
-      color: var(--text-sub);
-      font-size: 18px;
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 999px;
-    }
-
-    .export-close:hover {
-      background: #1f2937;
-      color: var(--text-main);
-    }
-
-    .export-body {
-      flex: 1;
-      padding: 12px 16px 8px;
-      display: flex;
-      gap: 12px;
-      overflow: hidden;
-    }
-
-    .export-column {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      border-radius: 10px;
-      border: 1px solid #1f2937;
-      background: #020617;
-    }
-
-    .export-column-title {
-      padding: 8px 12px;
-      font-size: 13px;
-      color: var(--text-sub);
-      border-bottom: 1px solid #1f2937;
-    }
-
-    .export-column-list {
-      flex: 1;
-      padding: 6px 10px;
-      overflow-y: auto;
-      scrollbar-width: thin;
-    }
-
-    .export-tag-item {
-      display: flex;
-      align-items: center;
-      padding: 2px 0;
-      font-size: 13px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .export-tag-item input {
-      margin-right: 6px;
-    }
-
-    .export-empty {
-      font-size: 12px;
-      color: var(--text-sub);
-      padding: 6px 2px;
-    }
-
-    .export-footer {
-      border-top: 1px solid #1f2937;
-      padding: 10px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: #020617;
-    }
-
-    .export-selected {
-      font-size: 13px;
-      color: var(--text-sub);
-    }
-
-    .export-footer-buttons {
-      display: flex;
-      gap: 8px;
-    }
-
-    @media (max-width: 960px) {
-      .panel-main {
-        flex-direction: column;
-      }
-
-      .form-section {
-        flex: 1;
-      }
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>天道扫码 v3.6 · 运单 / 设备 / 汇总 / SKU / 标签 / 设置</title>
+<style>
+:root{
+  --bg:#0b0f14;--panel:#121822;--card:#0f1520;--muted:#98a2b3;--text:#e8eef6;--accent:#4cc9f0;--accent2:#7c5cff;--good:#16a34a;--warn:#f59e0b;--bad:#ef4444;--line:#223049;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:linear-gradient(180deg,#0a0e14 0%,#0b111a 100%);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans",sans-serif}
+.wrap{max-width:1200px;margin:0 auto;padding:22px}
+.title{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+.logo{width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 0 0 2px #111 inset}
+h1{font-size:18px;margin:0;font-weight:700}
+.pill{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid #2a3a55;background:#121a2b;color:#c6d6f0}
+.right{margin-left:auto;color:#8ca3c7}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 18px}
+.tab{cursor:pointer;padding:10px 14px;border-radius:10px;background:#101827;border:1px solid #20314b;opacity:.85}
+.tab.active{background:linear-gradient(180deg,#151d2b,#0f1623);border-color:#2a3a55;opacity:1;box-shadow:0 0 0 1px #2a3a55 inset}
+.panel{background:linear-gradient(180deg,#0c1220,#0a111c);border:1px solid #1e2a3f;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);margin-bottom:14px}
+.head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid #1f2a40}
+.head h2{font-size:14px;margin:0;color:#cdd6e5}
+.flex{display:flex;gap:8px;align-items:center}
+.btn{height:32px;padding:0 12px;border-radius:10px;border:1px solid #2a3448;background:linear-gradient(180deg,#1a2232,#121a28);color:var(--text);cursor:pointer}
+.btn.sm{height:28px;border-radius:8px;font-size:12px}
+.btn.acc{background:linear-gradient(180deg,#214155,#163042);border-color:#2e5a76}
+.btn.good{background:linear-gradient(180deg,#12361f,#0f2a19);border-color:#1d4d2b}
+.btn.bad{background:linear-gradient(180deg,#3a1212,#2a0f0f);border-color:#5a1f1f}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;padding:14px}
+.form .full{grid-column:1/-1}
+input,select,textarea{height:38px;padding:0 10px;border-radius:10px;border:1px solid #2a3448;background:#0e1522;color:var(--text);outline:none}
+textarea{height:110px;padding:10px}
+input::placeholder{color:#6b7280}
+table{width:100%;border-collapse:separate;border-spacing:0 8px;padding:0 14px 14px}
+thead th{font-size:12px;font-weight:600;color:#9fb0c7;text-align:left;padding:0 8px}
+tbody tr{background:linear-gradient(180deg,#0c1320,#0b101a);border:1px solid #1e2a40}
+tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1e2a40}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#1b2331;border:1px solid #2b364a;padding:3px 8px;border-radius:999px;font-size:12px}
+.stat{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px 14px;border-top:1px dashed #23334d;background:linear-gradient(180deg,#0b111c,#0a0f18)}
+.card{background:linear-gradient(180deg,#0d1320,#0b111a);border:1px solid #1e2940;border-radius:12px;padding:10px}
+.card .v{font-size:18px;font-weight:700}
+.hidden{display:none}
+.exp{background:#0d1526;border-left:3px solid #2e4a7a}
+.warn{animation:flash 0.6s linear 2}
+.err{animation:flashR 0.6s linear 2}
+@keyframes flash{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.0)}50%{box-shadow:0 0 0 3px rgba(245,158,11,.35)}}
+@keyframes flashR{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.0)}50%{box-shadow:0 0 0 3px rgba(239,68,68,.35)}}
+.footer{margin-top:10px;color:#8b9ab3;text-align:center;font-size:12px}
+.k{color:#7aa2f7}
+
+/* 导出弹窗 */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:50}
+.modal.show{display:flex}
+.modal-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.75)}
+.modal-content{position:relative;z-index:60;width:600px;max-width:95%;background:#050816;border-radius:14px;border:1px solid #1e2a3f;box-shadow:0 20px 40px rgba(0,0,0,.6);padding:16px 18px 18px}
+.modal-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.modal-title h3{margin:0;font-size:14px}
+.modal-close{cursor:pointer;border:none;background:none;color:#9ca3af;font-size:18px}
+.modal-body{display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:12px;color:#cbd5f5}
+.modal-body h4{margin:0 0 6px;font-size:12px;color:#e5e7eb}
+.modal-body .box{border-radius:10px;border:1px solid #1f2937;background:#020617;padding:8px}
+.modal-footer{margin-top:10px;font-size:11px;color:#9ca3af}
+
+/* 标签管理表 */
+.tag-table thead th{font-size:12px}
+.tag-table tbody td{font-size:13px}
+
+/* ======== v3.6 新增：固定列表窗口（运单 / 设备 / 标签） ======== */
+.list-window,
+.tracking-window{
+  border-radius:12px;
+  border:1px solid #1e293b;
+  background:linear-gradient(180deg,#0b1120,#020617);
+  box-shadow:0 12px 30px rgba(0,0,0,.45);
+  overflow:hidden;
+  margin:0 14px 14px;
+}
+.list-header-row,
+.tracking-header-row{
+  background:linear-gradient(180deg,#0f172a,#020617);
+}
+.list-header-row th,
+.tracking-header-row th{
+  font-size:12px;
+  font-weight:600;
+  color:#9ca3af;
+  padding:8px 12px;
+  text-align:left;
+}
+.list-body-wrapper,
+.tracking-body-wrapper{
+  max-height:480px; /* 约 10 行 */
+  overflow-y:auto;
+}
+.list-body-wrapper::-webkit-scrollbar,
+.tracking-body-wrapper::-webkit-scrollbar,
+.sum-body-wrapper::-webkit-scrollbar{
+  width:6px;
+}
+.list-body-wrapper::-webkit-scrollbar-track,
+.tracking-body-wrapper::-webkit-scrollbar-track,
+.sum-body-wrapper::-webkit-scrollbar-track{
+  background:#020617;
+}
+.list-body-wrapper::-webkit-scrollbar-thumb,
+.tracking-body-wrapper::-webkit-scrollbar-thumb,
+.sum-body-wrapper::-webkit-scrollbar-thumb{
+  background:#374151;
+  border-radius:3px;
+}
+.tracking-row td,
+.sum-row td{
+  padding:8px 12px;
+  border-top:1px solid #111827;
+  border-bottom:1px solid #020617;
+  font-size:13px;
+}
+
+/* 标签管理中用到的小按钮，可以继续使用 .btn sm，也可以用下面两个 */
+.btn-rename{
+  padding:4px 10px;
+  font-size:12px;
+  border-radius:999px;
+  border:1px solid #334155;
+  background:#020617;
+  color:#e5e7eb;
+  cursor:pointer;
+  margin-right:6px;
+}
+.btn-rename:hover{border-color:#3b82f6}
+.btn-del{
+  padding:4px 10px;
+  font-size:12px;
+  border-radius:999px;
+  border:1px solid #7f1d1d;
+  background:linear-gradient(180deg,#b91c1c,#7f1d1d);
+  color:#fee2e2;
+  cursor:pointer;
+}
+
+/* ======== v3.6 新增：汇总 / 明细筛选 + 窗口 ======== */
+.summary-filters{
+  margin:10px 14px 6px;
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid #1e293b;
+  background:#020617;
+}
+.filter-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  font-size:12px;
+  color:#cbd5f5;
+}
+.filter-group{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.filter-group input,
+.filter-group select{
+  height:28px;
+  border-radius:6px;
+  border:1px solid #273549;
+  background:#020617;
+  color:#e5e7eb;
+  padding:0 6px;
+  font-size:12px;
+}
+.filter-actions{
+  margin-left:auto;
+  flex-wrap:wrap;
+  display:flex;
+  gap:6px;
+}
+.btn-sm2{
+  border-radius:999px;
+  border:1px solid #273549;
+  background:#020617;
+  color:#cbd5f5;
+  font-size:11px;
+  padding:4px 8px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.btn-sm2:hover{border-color:#3b82f6}
+
+.sum-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  margin:8px 14px 18px;
+}
+.sum-box-head{
+  padding:8px 12px;
+  border-radius:10px 10px 0 0;
+  border:1px solid #1e293b;
+  border-bottom:none;
+  background:linear-gradient(180deg,#0f172a,#020617);
+  font-size:13px;
+  color:#cbd5f5;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.sum-badge{
+  font-size:11px;
+  color:#9ca3af;
+  border-radius:999px;
+  border:1px solid #273549;
+  padding:2px 6px;
+  background:#020617;
+}
+.sum-window{
+  border-radius:0 0 12px 12px;
+  border:1px solid #1e293b;
+  background:linear-gradient(180deg,#0b1120,#020617);
+  box-shadow:0 8px 24px rgba(0,0,0,.45);
+  overflow:hidden;
+}
+.sum-header-row{
+  background:#020617;
+}
+.sum-header-row th{
+  font-size:12px;
+  font-weight:600;
+  color:#9fb0c7;
+  padding:6px 10px;
+  text-align:left;
+}
+.sum-body-wrapper{
+  max-height:320px;
+  overflow-y:auto;
+}
+.sum-row{
+  background:linear-gradient(180deg,#020617,#020617);
+}
+.sum-model-title{
+  font-size:13px;
+  color:#9ca3af;
+  margin:0 14px 6px;
+}
+.footer hr{border:none;border-top:1px solid #1e293b;margin:20px 0 10px}
+</style>
 </head>
 <body>
-  <div class="app">
-    <div id="messageBar" class="message-bar"></div>
+<div class="wrap">
+  <div class="title">
+    <div class="logo"></div><h1>天道扫码 v3.6</h1>
+    <span class="pill">本地运行 / GitHub Pages 可用</span>
+    <span class="right">UPS/FedEx 自动识别 · FedEx 尾 12 位 · SN 去重纠错 · 标签管理 · 汇总筛选导出</span>
+  </div>
 
-    <header class="app-header">
-      <div class="app-title">登记平台 v3.7</div>
-      <div class="app-date">
-        工作日期：
-        <input type="date" id="workDate" />
+  <div class="tabs">
+    <div class="tab active" data-tab="tracking">运单登记</div>
+    <div class="tab" data-tab="device">设备登记</div>
+    <div class="tab" data-tab="summary">汇总 / 明细</div>
+    <div class="tab" data-tab="sku">SKU 录入</div>
+    <div class="tab" data-tab="tags">标签管理</div>
+    <div class="tab" data-tab="settings">设置</div>
+  </div>
+
+  <!-- 运单 -->
+  <section id="panel-tracking" class="panel">
+    <div class="head">
+      <h2>运单登记（UPS / FedEx 自动识别；FedEx 保存尾 12 位；错误+重复人声提示）</h2>
+      <div class="flex">
+        <button class="btn sm" id="tExport">导出全部运单 CSV</button>
+        <label class="btn sm acc" for="tImport">导入CSV</label>
+        <input id="tImport" type="file" accept=".csv" class="hidden"/>
+        <button class="btn sm bad" id="tClear">清空</button>
       </div>
-    </header>
-
-    <div class="tab-bar">
-      <button class="tab-btn active" data-target="tab-waybill">运单号登记</button>
-      <button class="tab-btn" data-target="tab-device">设备登记</button>
-      <button class="tab-btn" data-target="tab-sku">SKU 映射</button>
-      <button class="tab-btn" data-target="tab-summary">汇总 / 明细</button>
+    </div>
+    <div class="form">
+      <input id="t_tag" list="tagList" placeholder="标签（如 U1/U2，支持下拉选择）"/>
+      <input id="t_input" placeholder="扫描或输入运单（UPS 1Z... / FedEx 数字）" class="mono"/>
+      <select id="t_type">
+        <option value="auto">自动识别</option>
+        <option value="UPS">UPS</option>
+        <option value="FedEx">FedEx</option>
+      </select>
+      <input id="t_note" placeholder="备注（可选）"/>
+      <button class="btn" id="tAdd">登记</button>
+      <button class="btn" id="tFocus">聚焦</button>
+    </div>
+    <div class="stat">
+      <div class="card"><div class="k">UPS</div><div class="v" id="tUPS">0</div></div>
+      <div class="card"><div class="k">FedEx（尾 12 位）</div><div class="v" id="tFedEx">0</div></div>
+      <div class="card"><div class="k">总计</div><div class="v" id="tCount">0</div></div>
+      <div class="card"><div class="k">标签种类</div><div class="v" id="tTags">0</div></div>
     </div>
 
-    <!-- 运单号登记 -->
-    <section id="tab-waybill" class="tab-content active">
-      <div class="panel">
-        <div class="panel-header">
-          <span>运单号登记</span>
-          <span style="font-size:12px;color:var(--text-sub);">录入时自动绑定当前工作日期</span>
+    <!-- v3.6 固定窗口列表 -->
+    <div class="tracking-window">
+      <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+        <thead>
+          <tr class="tracking-header-row">
+            <th style="width:140px;">标签</th>
+            <th>运单号</th>
+            <th style="width:80px;">类型</th>
+            <th style="width:180px;">时间</th>
+            <th>备注</th>
+            <th style="width:80px;">操作</th>
+          </tr>
+        </thead>
+      </table>
+      <div class="tracking-body-wrapper">
+        <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+          <tbody id="tBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 设备 -->
+  <section id="panel-device" class="panel hidden">
+    <div class="head">
+      <h2>设备登记（先标签 → SN → 自动跳 UPC → SKU 自动匹配；SN 11 位校验+去重）</h2>
+      <div class="flex">
+        <button class="btn sm" id="dExport">导出全部设备 CSV</button>
+        <label class="btn sm acc" for="dImport">导入CSV</label>
+        <input id="dImport" type="file" accept=".csv" class="hidden"/>
+        <button class="btn sm bad" id="dClear">清空</button>
+      </div>
+    </div>
+    <div class="form">
+      <input id="d_tag" list="tagList" placeholder="标签（如 U1/U2，支持下拉选择）"/>
+      <input id="d_serial" placeholder="序列号 Serial（必须 11 位字母+数字）" class="mono"/>
+      <input id="d_upc" placeholder="UPC（停顿自动入库；允许重复）" class="mono"/>
+      <input id="d_device" placeholder="Device（SKU 自动填）"/>
+      <input id="d_capacity" placeholder="Capacity（SKU 自动填）"/>
+      <input id="d_color" placeholder="Color（SKU 自动填）"/>
+      <div class="full" style="display:flex;gap:8px;align-items:center;color:#9fb0c7;padding-top:0">
+        <span>提示：SN 非 11 位或包含非法字符 → 红闪 + 英文女声“Serial number error”，停止保存；SN 重复可选阻止；UPC 重复仅警告不阻止。</span>
+      </div>
+    </div>
+    <div class="stat">
+      <div class="card"><div class="k">设备总数</div><div class="v" id="dCount">0</div></div>
+      <div class="card"><div class="k">唯一序列号</div><div class="v" id="dUnique">0</div></div>
+      <div class="card"><div class="k">标签种类</div><div class="v" id="dTags">0</div></div>
+      <div class="card"><div class="k">最近登记</div><div class="v" id="dLast">-</div></div>
+    </div>
+
+    <!-- 固定窗口设备列表 -->
+    <div class="tracking-window">
+      <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+        <thead>
+          <tr class="tracking-header-row">
+            <th style="width:120px;">标签</th>
+            <th style="width:130px;">序列号</th>
+            <th style="width:130px;">UPC</th>
+            <th>Device</th>
+            <th style="width:80px;">容量</th>
+            <th style="width:80px;">颜色</th>
+            <th style="width:170px;">时间</th>
+            <th style="width:70px;">状态</th>
+            <th style="width:80px;">操作</th>
+          </tr>
+        </thead>
+      </table>
+      <div class="tracking-body-wrapper">
+        <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+          <tbody id="dBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 汇总 -->
+  <section id="panel-summary" class="panel hidden">
+    <div class="head">
+      <h2>汇总 / 明细（按标签 + 按机型统计；支持日期 / 标签 / 时间段筛选导出）</h2>
+      <div class="flex">
+        <button class="btn sm acc" id="btnExportDay">按日期 + 标签导出（老模式）</button>
+      </div>
+    </div>
+
+    <!-- v3.6 汇总筛选条 -->
+    <div class="summary-filters">
+      <div class="filter-row">
+        <div class="filter-group">
+          <span>日期：</span>
+          <input type="date" id="sumDate" />
         </div>
-
-        <div class="panel-main">
-          <div class="form-section">
-            <form id="waybillForm">
-              <div class="form-row">
-                <label for="waybillNo">运单号 *</label>
-                <input
-                  type="text"
-                  id="waybillNo"
-                  autocomplete="off"
-                  placeholder="扫描或输入运单号"
-                />
-              </div>
-
-              <div class="form-row">
-                <label for="waybillTag">客户标签（如 U1 / Bing dao）</label>
-                <input
-                  type="text"
-                  id="waybillTag"
-                  autocomplete="off"
-                  placeholder="可空，导出按标签筛选"
-                />
-              </div>
-
-              <div class="form-row">
-                <label for="waybillRemark">备注</label>
-                <input
-                  type="text"
-                  id="waybillRemark"
-                  autocomplete="off"
-                  placeholder="可写批次、渠道等"
-                />
-              </div>
-
-              <div class="form-row">
-                <button type="submit" class="btn-primary" style="width:100%;">
-                  保存运单
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <div class="table-section">
-            <div class="table-section-header">
-              <span>当日运单列表</span>
-              <span style="font-size:11px;color:var(--text-sub);">只显示当前工作日期的数据</span>
-            </div>
-            <div class="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>日期</th>
-                    <th>运单号</th>
-                    <th>客户标签</th>
-                    <th>备注</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody id="waybillTableBody"></tbody>
-              </table>
-            </div>
-          </div>
+        <div class="filter-group">
+          <span>客户 / 标签：</span>
+          <select id="sumTag">
+            <option value="">全部</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span>时间段：</span>
+          <input type="time" id="sumTimeFrom" />
+          <span>至</span>
+          <input type="time" id="sumTimeTo" />
+        </div>
+        <div class="filter-group filter-actions">
+          <button class="btn-sm2" id="sumApply">应用筛选</button>
+          <button class="btn-sm2" id="sumExportTracking">导出运单 CSV</button>
+          <button class="btn-sm2" id="sumExportDevice">导出设备 CSV</button>
+          <button class="btn-sm2" id="sumExportModel">导出机型汇总 CSV</button>
+          <button class="btn-sm2" id="sumExportReconcile">对账导出（设备为主）</button>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- 设备登记 -->
-    <section id="tab-device" class="tab-content">
-      <div class="panel">
-        <div class="panel-header">
-          <span>设备登记</span>
-          <span style="font-size:12px;color:var(--text-sub);">可选择绑定某个运单号</span>
+    <!-- 上半：左 = 运单总汇；右 = 设备总汇 -->
+    <div class="sum-grid">
+      <div>
+        <div class="sum-box-head">
+          运单汇总（按标签：UPS / FedEx / 总数；▶ 展开查看明细）
+          <span class="sum-badge">同一窗口内滚动查看更多标签</span>
         </div>
-        <div class="panel-main">
-          <div class="form-section">
-            <form id="deviceForm">
-              <div class="form-row">
-                <label for="deviceSn">设备 SN / IMEI *</label>
-                <input
-                  type="text"
-                  id="deviceSn"
-                  autocomplete="off"
-                  placeholder="扫描或输入 SN / IMEI"
-                />
-              </div>
-
-              <!-- 新增：SKU / 条码 + 自动填充 -->
-              <div class="form-row form-row-inline">
-                <div class="form-row" style="flex:1;">
-                  <label for="deviceSku">SKU / 条码</label>
-                  <input
-                    type="text"
-                    id="deviceSku"
-                    autocomplete="off"
-                    placeholder="如 MQ3D3CH/A（可选）"
-                  />
-                </div>
-                <div class="form-row" style="width:120px;align-self:flex-end;">
-                  <label style="visibility:hidden;">填充</label>
-                  <button
-                    type="button"
-                    class="btn-secondary"
-                    style="width:100%;"
-                    onclick="applySkuToDevice()"
-                  >
-                    自动填充
-                  </button>
-                </div>
-              </div>
-
-              <div class="form-row">
-                <label for="deviceModel">型号</label>
-                <input
-                  type="text"
-                  id="deviceModel"
-                  autocomplete="off"
-                  placeholder="如 iPhone 17 Pro"
-                />
-              </div>
-
-              <div class="form-row form-row-inline">
-                <div class="form-row" style="flex:1;">
-                  <label for="deviceColor">颜色</label>
-                  <input
-                    type="text"
-                    id="deviceColor"
-                    autocomplete="off"
-                    placeholder="如 黑色"
-                  />
-                </div>
-                <div class="form-row" style="flex:1;">
-                  <label for="deviceCapacity">容量</label>
-                  <input
-                    type="text"
-                    id="deviceCapacity"
-                    autocomplete="off"
-                    placeholder="如 256G"
-                  />
-                </div>
-              </div>
-
-              <div class="form-row">
-                <label for="deviceTag">客户标签（如 U1 / Bing dao）</label>
-                <input
-                  type="text"
-                  id="deviceTag"
-                  autocomplete="off"
-                  placeholder="与运单标签统一，方便汇总"
-                />
-              </div>
-
-              <div class="form-row">
-                <label for="deviceWaybillSelect">绑定运单号（可选）</label>
-                <select id="deviceWaybillSelect">
-                  <option value="">不绑定</option>
-                </select>
-              </div>
-
-              <div class="form-row">
-                <label for="deviceRemark">备注</label>
-                <input
-                  type="text"
-                  id="deviceRemark"
-                  autocomplete="off"
-                  placeholder="序列号异常等说明"
-                />
-              </div>
-
-              <div class="form-row">
-                <button type="submit" class="btn-primary" style="width:100%;">
-                  保存设备
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <div class="table-section">
-            <div class="table-section-header">
-              <span>当日设备列表</span>
-              <span style="font-size:11px;color:var(--text-sub);">只显示当前工作日期的数据</span>
-            </div>
-            <div class="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>日期</th>
-                    <th>SN / IMEI</th>
-                    <th>SKU</th>
-                    <th>型号</th>
-                    <th>颜色</th>
-                    <th>容量</th>
-                    <th>客户标签</th>
-                    <th>绑定运单</th>
-                    <th>备注</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody id="deviceTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SKU 映射 -->
-    <section id="tab-sku" class="tab-content">
-      <div class="panel">
-        <div class="panel-header">
-          <span>SKU 映射维护</span>
-          <span style="font-size:12px;color:var(--text-sub);">
-            用于自动填充设备型号 / 颜色 / 容量（通用，不区分日期）
-          </span>
-        </div>
-
-        <div class="panel-main">
-          <div class="form-section">
-            <form id="skuForm">
-              <div class="form-row">
-                <label for="skuCode">SKU / 条码 *</label>
-                <input
-                  type="text"
-                  id="skuCode"
-                  autocomplete="off"
-                  placeholder="如 MQ3D3CH/A 或自定义编码"
-                />
-              </div>
-
-              <div class="form-row">
-                <label for="skuModel">型号 *</label>
-                <input
-                  type="text"
-                  id="skuModel"
-                  autocomplete="off"
-                  placeholder="如 iPhone 17 Pro"
-                />
-              </div>
-
-              <div class="form-row form-row-inline">
-                <div class="form-row" style="flex:1;">
-                  <label for="skuColor">颜色</label>
-                  <input
-                    type="text"
-                    id="skuColor"
-                    autocomplete="off"
-                    placeholder="如 黑色"
-                  />
-                </div>
-                <div class="form-row" style="flex:1;">
-                  <label for="skuCapacity">容量</label>
-                  <input
-                    type="text"
-                    id="skuCapacity"
-                    autocomplete="off"
-                    placeholder="如 256G"
-                  />
-                </div>
-              </div>
-
-              <div class="form-row">
-                <button type="submit" class="btn-primary" style="width:100%;">
-                  保存映射（存在则更新）
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <div class="table-section">
-            <div class="table-section-header">
-              <span>SKU 映射列表</span>
-              <span style="font-size:11px;color:var(--text-sub);">
-                在设备登记中根据 SKU 自动带出信息
-              </span>
-            </div>
-            <div class="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>SKU / 条码</th>
-                    <th>型号</th>
-                    <th>颜色</th>
-                    <th>容量</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody id="skuTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 汇总 / 明细 -->
-    <section id="tab-summary" class="tab-content">
-      <div class="panel">
-        <div class="panel-header">
-          <span>汇总 / 明细</span>
-          <span style="font-size:12px;color:var(--text-sub);">基于当前工作日期的运单和设备数据</span>
-        </div>
-
-        <div class="summary-cards">
-          <div class="summary-card">
-            <div class="summary-card-label">当日运单数量</div>
-            <div id="sumWaybillCount" class="summary-card-value">0</div>
-          </div>
-          <div class="summary-card">
-            <div class="summary-card-label">当日设备数量</div>
-            <div id="sumDeviceCount" class="summary-card-value">0</div>
-          </div>
-        </div>
-
-        <div class="summary-section">
-          <div class="summary-section-header">
-            <span>按标签汇总</span>
-            <button class="btn-light" onclick="openExportModal()">
-              按标签导出 CSV
-            </button>
-          </div>
-          <div class="table-scroll" style="max-height:280px;">
-            <table>
-              <thead>
-                <tr>
-                  <th>标签</th>
-                  <th>运单数量</th>
-                  <th>设备数量</th>
-                </tr>
-              </thead>
-              <tbody id="summaryByTagBody"></tbody>
+        <div class="sum-window">
+          <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+            <thead>
+              <tr class="sum-header-row">
+                <th style="width:140px;">Tag</th>
+                <th style="width:70px;">UPS</th>
+                <th style="width:80px;">FedEx</th>
+                <th style="width:70px;">总数</th>
+                <th style="width:170px;">最近时间</th>
+                <th style="width:80px;">操作</th>
+              </tr>
+            </thead>
+          </table>
+          <div class="sum-body-wrapper">
+            <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+              <tbody id="sumT"></tbody>
             </table>
           </div>
         </div>
       </div>
-    </section>
-  </div>
 
-  <!-- ===== 导出弹窗 ===== -->
-  <div id="exportModalOverlay" class="export-overlay hidden">
-    <div class="export-modal">
-      <div class="export-header">
-        <div class="export-title">按标签导出</div>
-        <div class="export-date">
-          日期：
-          <span id="exportDateText"></span>
+      <div>
+        <div class="sum-box-head">
+          设备汇总（按 标签 + 机型 + 容量 + 颜色；▶ 展开看 SN / UPC）
+          <span class="sum-badge">同一窗口内滚动查看更多款式</span>
         </div>
-        <div class="export-header-spacer"></div>
-        <button class="export-close" onclick="closeExportModal()">×</button>
-      </div>
-
-      <div class="export-body">
-        <div class="export-column">
-          <div class="export-column-title">运单号标签</div>
-          <div class="export-column-list" id="waybillTagList"></div>
-        </div>
-
-        <div class="export-column">
-          <div class="export-column-title">设备标签</div>
-          <div class="export-column-list" id="deviceTagList"></div>
-        </div>
-      </div>
-
-      <div class="export-footer">
-        <div class="export-selected">
-          已选择：运单标签 <span id="countWaybill">0</span> 个，
-          设备标签 <span id="countDevice">0</span> 个
-        </div>
-        <div class="export-footer-buttons">
-          <button class="btn-secondary" onclick="closeExportModal()">取消</button>
-          <button class="btn-primary" onclick="exportWaybillCSV()">导出运单 CSV</button>
-          <button class="btn-primary" onclick="exportDeviceCSV()">导出设备 CSV</button>
+        <div class="sum-window">
+          <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+            <thead>
+              <tr class="sum-header-row">
+                <th style="width:130px;">Tag</th>
+                <th>机型</th>
+                <th style="width:80px;">容量</th>
+                <th style="width:80px;">颜色</th>
+                <th style="width:70px;">数量</th>
+                <th style="width:80px;">操作</th>
+              </tr>
+            </thead>
+          </table>
+          <div class="sum-body-wrapper">
+            <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+              <tbody id="sumD"></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- 下半：按机型 + 颜色 + 容量 + 日期 汇总（不分标签） -->
+    <div class="sum-model-title">
+      按机型汇总（不分标签，只看 Device + 容量 + 颜色 + 数量；按天分开，可用上面的日期筛选）
+    </div>
+    <div class="sum-window" style="margin:0 14px 14px;">
+      <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+        <thead>
+          <tr class="sum-header-row">
+            <th>Device</th>
+            <th style="width:90px;">容量</th>
+            <th style="width:90px;">颜色</th>
+            <th style="width:70px;">数量</th>
+            <th style="width:110px;">日期</th>
+          </tr>
+        </thead>
+      </table>
+      <div class="sum-body-wrapper">
+        <table style="width:100%;border-collapse:collapse;border-spacing:0;">
+          <tbody id="sumModel"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKU -->
+  <section id="panel-sku" class="panel hidden">
+    <div class="head">
+      <h2>SKU 录入 / 查看（UPC → Device/Capacity/Color；支持手动 + 批量）</h2>
+      <div class="flex">
+        <button class="btn sm" id="skuExport">导出 SKU 映射 CSV</button>
+        <button class="btn sm bad" id="skuClear">清空映射</button>
+      </div>
+    </div>
+    <div class="form">
+      <input id="sku_upc" placeholder="UPC（必填）" class="mono"/>
+      <input id="sku_device" placeholder="Device"/>
+      <input id="sku_capacity" placeholder="Capacity"/>
+      <input id="sku_color" placeholder="Color"/>
+      <button class="btn good" id="skuAdd">添加/更新一条</button>
+      <label class="btn acc" for="skuFile">导入CSV</label>
+      <input id="skuFile" type="file" accept=".csv" class="hidden"/>
+      <div class="full">
+        <textarea id="skuPaste" placeholder="从 Google 表格复制四列（UPC,Device,Capacity,Color）后粘贴到这里，每行一条"></textarea>
+      </div>
+      <button class="btn" id="skuPasteBtn">从文本批量导入</button>
+      <div class="full" style="color:#9fb0c7">提示：重复 UPC 会覆盖更新；导入支持 CSV 或直接粘贴。</div>
+    </div>
+    <table>
+      <thead><tr><th>UPC</th><th>Device</th><th>Capacity</th><th>Color</th><th>操作</th></tr></thead>
+      <tbody id="skuBody"></tbody>
+    </table>
+  </section>
+
+  <!-- 标签管理 -->
+  <section id="panel-tags" class="panel hidden">
+    <div class="head">
+      <h2>标签管理（打标签页面：扫描时可直接下拉选择）</h2>
+      <div class="flex">
+        <button class="btn sm" id="tagRefresh">刷新标签列表</button>
+      </div>
+    </div>
+    <div class="form">
+      <input id="tagNew" placeholder="新标签（如 tiand cai / U1 等）"/>
+      <button class="btn good" id="tagAdd">添加标签</button>
+      <div class="full" style="color:#9fb0c7">
+        说明：这里维护可选标签列表。扫描运单/设备时，如果输入了新的标签，也会自动加入到标签列表（A+B+C+D）。
+      </div>
+    </div>
+
+    <!-- v3.6 标签列表固定窗口 -->
+    <div class="tracking-window">
+      <table style="width:100%;border-collapse:collapse;border-spacing:0;" class="tag-table">
+        <thead>
+          <tr class="tracking-header-row">
+            <th style="width:260px;">标签</th>
+            <th style="width:120px;">运单数量</th>
+            <th style="width:120px;">设备数量</th>
+            <th style="width:140px;">操作</th>
+          </tr>
+        </thead>
+      </table>
+      <div class="tracking-body-wrapper">
+        <table style="width:100%;border-collapse:collapse;border-spacing:0;" class="tag-table">
+          <tbody id="tagBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 设置 -->
+  <section id="panel-settings" class="panel hidden">
+    <div class="head"><h2>设置</h2></div>
+    <div class="form">
+      <label class="full" style="display:flex;gap:10px;align-items:center">
+        <input type="checkbox" id="setFedTail"> FedEx 运单只保留后 12 位
+      </label>
+      <label class="full" style="display:flex;gap:10px;align-items:center">
+        <input type="checkbox" id="setVoice"> 启用英文女声提示（错误时播报）
+      </label>
+      <label class="full" style="display:flex;gap:10px;align-items:center">
+        <input type="checkbox" id="setBeep"> 启用提示音（成功/警告）
+      </label>
+      <label class="full" style="display:flex;gap:10px;align-items:center">
+        <input type="checkbox" id="setBlockDupSN"> 序列号重复阻止保存（否则仅警告）
+      </label>
+      <label class="full" style="display:flex;gap:10px;align-items:center">
+        <input type="checkbox" id="setAutoScan"> 启用“无回车自动入库”（扫描停止 ~180ms 自动保存）
+      </label>
+      <label class="full" style="display:flex;gap:10px;align-items:center">
+        <input type="checkbox" id="setConfirmDel" checked> 删除前确认
+      </label>
+      <div class="full" style="color:#9fb0c7">所有数据与设置均保存在本机浏览器 localStorage（键名：<span class="mono">TIANDAO_SCAN_V34</span>）；可随时导出 CSV 备份。</div>
+    </div>
+  </section>
+
+  <div class="footer">© 天道扫码 v3.6 · 本地运行</div>
+</div>
+
+<!-- 标签 datalist（运单 + 设备 共用） -->
+<datalist id="tagList"></datalist>
+
+<!-- 导出弹窗：按日期 + 标签导出（老模式保留） -->
+<div id="exportModal" class="modal hidden">
+  <div class="modal-backdrop" id="exportBackdrop"></div>
+  <div class="modal-content">
+    <div class="modal-title">
+      <h3>按日期 + 标签导出</h3>
+      <button class="modal-close" id="exportClose">✕</button>
+    </div>
+    <div style="margin-bottom:8px;font-size:12px;color:#e5e7eb">
+      选择日期（必选）和需要导出的标签，可分别导出“运单 CSV”和“设备 CSV”（两个表格）。
+    </div>
+    <div style="margin-bottom:8px;font-size:12px;color:#cbd5f5">
+      日期：
+      <input type="date" id="expDate" style="height:30px;border-radius:8px;border:1px solid #374151;background:#020617;color:#e5e7eb;padding:0 6px"/>
+    </div>
+    <div class="modal-body">
+      <div class="box">
+        <h4>运单标签选择</h4>
+        <div id="expTagsTracking"></div>
+        <button class="btn sm" id="btnExportTrackingDay" style="margin-top:8px;">导出运单 CSV</button>
+      </div>
+      <div class="box">
+        <h4>设备标签选择</h4>
+        <div id="expTagsDevice"></div>
+        <button class="btn sm" id="btnExportDeviceDay" style="margin-top:8px;">导出设备 CSV</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      提示：只导出选定日期（按 created 日期） + 已勾选标签的数据。未选择标签则导出该日期下所有标签。
+    </div>
   </div>
+</div>
 
-  <script>
-    // ========== 全局数据 ==========
-    const state = {
-      waybills: [],   // { date, waybillNo, tag, remark }
-      devices: [],    // { date, sn, sku, model, color, capacity, tag, waybillNo, remark }
-      skuMappings: [] // { sku, model, color, capacity }
+<script>
+/* ========== 存储 ========= */
+const storeKey='TIANDAO_SCAN_V34'; // 保持不变，兼容旧数据
+const DB=loadDB();
+function loadDB(){
+  try{
+    const d=JSON.parse(localStorage.getItem(storeKey)||'{}');
+    return Object.assign({
+      settings:{fedTail:true,voice:true,beep:true,blockDupSN:true,autoScan:true,confirmDel:true},
+      tags:[],        // 标签列表
+      tracking:[],    // {id,tag,tracking,type,note,created_at,created_date}
+      device:[],      // {id,tag,serial,upc,device,capacity,color,status,created_at,created_date}
+      sku:{}          // upc -> {device,capacity,color}
+    },d);
+  }catch(e){
+    return {
+      settings:{fedTail:true,voice:true,beep:true,blockDupSN:true,autoScan:true,confirmDel:true},
+      tags:[],
+      tracking:[],
+      device:[],
+      sku:{}
     };
-
-    // ========== 工具 ==========
-    function getWorkDate() {
-      return document.getElementById("workDate").value;
-    }
-
-    function setTodayAsWorkDate() {
-      const input = document.getElementById("workDate");
-      const today = new Date();
-      const y = today.getFullYear();
-      const m = String(today.getMonth() + 1).padStart(2, "0");
-      const d = String(today.getDate()).padStart(2, "0");
-      input.value = `${y}-${m}-${d}`;
-    }
-
-    function showMessage(text, type = "error") {
-      const bar = document.getElementById("messageBar");
-      bar.textContent = text;
-      bar.className = "message-bar " + (type === "success" ? "success" : "error");
-      bar.style.opacity = "1";
-      clearTimeout(showMessage._timer);
-      showMessage._timer = setTimeout(() => {
-        bar.style.opacity = "0";
-      }, 2500);
-    }
-
-    function formatDisplayDate(iso) {
-      if (!iso) return "";
-      const parts = iso.split("-");
-      if (parts.length !== 3) return iso;
-      const [y, m, d] = parts;
-      return `${d}/${m}/${y}`;
-    }
-
-    // ========== 运单登记 ==========
-    function saveWaybill() {
-      const date = getWorkDate();
-      if (!date) {
-        showMessage("请先选择工作日期", "error");
-        return;
-      }
-
-      const waybillNo = document.getElementById("waybillNo").value.trim();
-      const tag = document.getElementById("waybillTag").value.trim();
-      const remark = document.getElementById("waybillRemark").value.trim();
-
-      if (!waybillNo) {
-        showMessage("运单号不能为空", "error");
-        return;
-      }
-
-      const exists = state.waybills.some(
-        w => w.waybillNo.toLowerCase() === waybillNo.toLowerCase()
-      );
-      if (exists) {
-        showMessage("运单号已存在，已阻止重复录入", "error");
-        return;
-      }
-
-      state.waybills.push({ date, waybillNo, tag, remark });
-
-      document.getElementById("waybillNo").value = "";
-      document.getElementById("waybillRemark").value = "";
-
-      renderWaybillTable();
-      renderWaybillSelectOptions();
-      renderSummary();
-      showMessage("已保存运单", "success");
-    }
-
-    function renderWaybillTable() {
-      const tbody = document.getElementById("waybillTableBody");
-      tbody.innerHTML = "";
-      const date = getWorkDate();
-
-      const list = state.waybills.filter(w => w.date === date);
-
-      list.forEach((w, idx) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${idx + 1}</td>
-          <td>${w.date}</td>
-          <td>${w.waybillNo}</td>
-          <td>${w.tag || ""}</td>
-          <td>${w.remark || ""}</td>
-          <td><span class="table-action" data-index="${idx}" data-type="waybill">删除</span></td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      if (list.length === 0) {
-        const tr = document.createElement("tr");
-        tr.innerHTML = '<td colspan="6" style="font-size:12px;color:var(--text-sub);">当前日期暂无运单记录</td>';
-        tbody.appendChild(tr);
-      }
-    }
-
-    function deleteWaybillByIndex(indexInDay) {
-      const date = getWorkDate();
-      const dayList = state.waybills.filter(w => w.date === date);
-      if (indexInDay < 0 || indexInDay >= dayList.length) return;
-
-      const target = dayList[indexInDay];
-      const i = state.waybills.findIndex(
-        w => w.date === target.date && w.waybillNo === target.waybillNo
-      );
-      if (i >= 0) state.waybills.splice(i, 1);
-
-      renderWaybillTable();
-      renderWaybillSelectOptions();
-      renderSummary();
-      showMessage("已删除该运单", "success");
-    }
-
-    function renderWaybillSelectOptions() {
-      const select = document.getElementById("deviceWaybillSelect");
-      const cur = select.value;
-      const date = getWorkDate();
-      select.innerHTML = '<option value="">不绑定</option>';
-
-      state.waybills
-        .filter(w => w.date === date)
-        .forEach(w => {
-          const opt = document.createElement("option");
-          opt.value = w.waybillNo;
-          opt.textContent = w.waybillNo;
-          select.appendChild(opt);
-        });
-
-      if (cur) select.value = cur;
-    }
-
-    // ========== 设备登记 ==========
-    function saveDevice() {
-      const date = getWorkDate();
-      if (!date) {
-        showMessage("请先选择工作日期", "error");
-        return;
-      }
-
-      const sn = document.getElementById("deviceSn").value.trim();
-      const skuRaw = document.getElementById("deviceSku").value.trim();
-      const sku = skuRaw ? skuRaw.toUpperCase() : "";
-      const model = document.getElementById("deviceModel").value.trim();
-      const color = document.getElementById("deviceColor").value.trim();
-      const capacity = document.getElementById("deviceCapacity").value.trim();
-      const tag = document.getElementById("deviceTag").value.trim();
-      const waybillNo = document.getElementById("deviceWaybillSelect").value;
-      const remark = document.getElementById("deviceRemark").value.trim();
-
-      if (!sn) {
-        showMessage("设备 SN / IMEI 不能为空", "error");
-        return;
-      }
-
-      const exists = state.devices.some(
-        d => d.sn.toLowerCase() === sn.toLowerCase()
-      );
-      if (exists) {
-        showMessage("该设备 SN / IMEI 已登记，已阻止重复录入", "error");
-        return;
-      }
-
-      state.devices.push({
-        date,
-        sn,
-        sku,
-        model,
-        color,
-        capacity,
-        tag,
-        waybillNo,
-        remark
-      });
-
-      document.getElementById("deviceSn").value = "";
-      document.getElementById("deviceRemark").value = "";
-
-      renderDeviceTable();
-      renderSummary();
-      showMessage("已保存设备", "success");
-    }
-
-    function renderDeviceTable() {
-      const tbody = document.getElementById("deviceTableBody");
-      tbody.innerHTML = "";
-      const date = getWorkDate();
-      const list = state.devices.filter(d => d.date === date);
-
-      list.forEach((d, idx) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${idx + 1}</td>
-          <td>${d.date}</td>
-          <td>${d.sn}</td>
-          <td>${d.sku || ""}</td>
-          <td>${d.model || ""}</td>
-          <td>${d.color || ""}</td>
-          <td>${d.capacity || ""}</td>
-          <td>${d.tag || ""}</td>
-          <td>${d.waybillNo || ""}</td>
-          <td>${d.remark || ""}</td>
-          <td><span class="table-action" data-index="${idx}" data-type="device">删除</span></td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      if (list.length === 0) {
-        const tr = document.createElement("tr");
-        tr.innerHTML = '<td colspan="11" style="font-size:12px;color:var(--text-sub);">当前日期暂无设备记录</td>';
-        tbody.appendChild(tr);
-      }
-    }
-
-    function deleteDeviceByIndex(indexInDay) {
-      const date = getWorkDate();
-      const dayList = state.devices.filter(d => d.date === date);
-      if (indexInDay < 0 || indexInDay >= dayList.length) return;
-
-      const target = dayList[indexInDay];
-      const i = state.devices.findIndex(
-        d => d.date === target.date && d.sn === target.sn
-      );
-      if (i >= 0) state.devices.splice(i, 1);
-
-      renderDeviceTable();
-      renderSummary();
-      showMessage("已删除该设备记录", "success");
-    }
-
-    // SKU 自动填充（设备登记用）
-    function applySkuToDevice() {
-      const skuInput = document.getElementById("deviceSku");
-      const raw = skuInput.value.trim();
-      if (!raw) {
-        showMessage("请先输入 SKU / 条码", "error");
-        return;
-      }
-      const key = raw.toUpperCase();
-      const mapping = state.skuMappings.find(m => m.sku === key);
-      if (!mapping) {
-        showMessage("当前 SKU 没有映射，请先在 SKU 映射页添加", "error");
-        return;
-      }
-
-      document.getElementById("deviceSku").value = key;
-      document.getElementById("deviceModel").value = mapping.model || "";
-      document.getElementById("deviceColor").value = mapping.color || "";
-      document.getElementById("deviceCapacity").value = mapping.capacity || "";
-
-      showMessage("已根据 SKU 自动填充型号信息", "success");
-    }
-
-    // ========== SKU 映射 ==========
-    function saveSkuMapping() {
-      const skuCodeRaw = document.getElementById("skuCode").value.trim();
-      const skuCode = skuCodeRaw.toUpperCase();
-      const model = document.getElementById("skuModel").value.trim();
-      const color = document.getElementById("skuColor").value.trim();
-      const capacity = document.getElementById("skuCapacity").value.trim();
-
-      if (!skuCode) {
-        showMessage("SKU / 条码不能为空", "error");
-        return;
-      }
-      if (!model) {
-        showMessage("型号不能为空", "error");
-        return;
-      }
-
-      const idx = state.skuMappings.findIndex(m => m.sku === skuCode);
-      if (idx >= 0) {
-        state.skuMappings[idx] = { sku: skuCode, model, color, capacity };
-        showMessage("已更新现有 SKU 映射", "success");
-      } else {
-        state.skuMappings.push({ sku: skuCode, model, color, capacity });
-        showMessage("已新增 SKU 映射", "success");
-      }
-
-      document.getElementById("skuCode").value = "";
-      document.getElementById("skuModel").value = "";
-      document.getElementById("skuColor").value = "";
-      document.getElementById("skuCapacity").value = "";
-
-      renderSkuTable();
-    }
-
-    function renderSkuTable() {
-      const tbody = document.getElementById("skuTableBody");
-      if (!tbody) return; // 保险
-      tbody.innerHTML = "";
-
-      if (state.skuMappings.length === 0) {
-        const tr = document.createElement("tr");
-        tr.innerHTML = '<td colspan="6" style="font-size:12px;color:var(--text-sub);">当前暂无 SKU 映射，请在左侧添加</td>';
-        tbody.appendChild(tr);
-        return;
-      }
-
-      state.skuMappings.forEach((m, idx) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${idx + 1}</td>
-          <td>${m.sku}</td>
-          <td>${m.model}</td>
-          <td>${m.color || ""}</td>
-          <td>${m.capacity || ""}</td>
-          <td><span class="table-action" data-type="sku" data-index="${idx}">删除</span></td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function deleteSkuByIndex(idx) {
-      if (idx < 0 || idx >= state.skuMappings.length) return;
-      state.skuMappings.splice(idx, 1);
-      renderSkuTable();
-      showMessage("已删除该 SKU 映射", "success");
-    }
-
-    // ========== 汇总 ==========
-    function renderSummary() {
-      const date = getWorkDate();
-      const dayWaybills = state.waybills.filter(w => w.date === date);
-      const dayDevices = state.devices.filter(d => d.date === date);
-
-      document.getElementById("sumWaybillCount").textContent = dayWaybills.length;
-      document.getElementById("sumDeviceCount").textContent = dayDevices.length;
-
-      const summaryMap = {}; // tag -> { waybillCount, deviceCount }
-
-      dayWaybills.forEach(w => {
-        const tag = w.tag || "(未填标签)";
-        if (!summaryMap[tag]) summaryMap[tag] = { waybillCount: 0, deviceCount: 0 };
-        summaryMap[tag].waybillCount++;
-      });
-
-      dayDevices.forEach(d => {
-        const tag = d.tag || "(未填标签)";
-        if (!summaryMap[tag]) summaryMap[tag] = { waybillCount: 0, deviceCount: 0 };
-        summaryMap[tag].deviceCount++;
-      });
-
-      const tbody = document.getElementById("summaryByTagBody");
-      tbody.innerHTML = "";
-
-      const tags = Object.keys(summaryMap).sort((a, b) =>
-        a.localeCompare(b, "zh-CN")
-      );
-
-      if (tags.length === 0) {
-        const tr = document.createElement("tr");
-        tr.innerHTML = '<td colspan="3" style="font-size:12px;color:var(--text-sub);">当前日期暂无数据</td>';
-        tbody.appendChild(tr);
-        return;
-      }
-
-      tags.forEach(tag => {
-        const rec = summaryMap[tag];
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${tag}</td>
-          <td>${rec.waybillCount}</td>
-          <td>${rec.deviceCount}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    // ========== 导出弹窗 ==========
-    function openExportModal() {
-      const date = getWorkDate();
-      if (!date) {
-        showMessage("请先选择工作日期", "error");
-        return;
-      }
-      prepareExportModal();
-      document.getElementById("exportModalOverlay").classList.remove("hidden");
-    }
-
-    function closeExportModal() {
-      document.getElementById("exportModalOverlay").classList.add("hidden");
-    }
-
-    function prepareExportModal() {
-      const workDate = getWorkDate();
-      document.getElementById("exportDateText").textContent = formatDisplayDate(workDate);
-
-      const waybillListEl = document.getElementById("waybillTagList");
-      const deviceListEl  = document.getElementById("deviceTagList");
-      waybillListEl.innerHTML = "";
-      deviceListEl.innerHTML  = "";
-
-      const dayWaybills = state.waybills.filter(w => w.date === workDate);
-      const dayDevices  = state.devices.filter(d => d.date === workDate);
-
-      const waybillTags = Array.from(
-        new Set(
-          dayWaybills
-            .map(w => w.tag && w.tag.trim())
-            .filter(t => t && t.length)
-        )
-      ).sort((a, b) => a.localeCompare(b, "zh-CN"));
-
-      const deviceTags = Array.from(
-        new Set(
-          dayDevices
-            .map(d => d.tag && d.tag.trim())
-            .filter(t => t && t.length)
-        )
-      ).sort((a, b) => a.localeCompare(b, "zh-CN"));
-
-      if (waybillTags.length === 0) {
-        const div = document.createElement("div");
-        div.className = "export-empty";
-        div.textContent = "当前日期无运单标签";
-        waybillListEl.appendChild(div);
-      } else {
-        waybillTags.forEach(tag => {
-          waybillListEl.appendChild(createTagItem(tag, "waybill"));
-        });
-      }
-
-      if (deviceTags.length === 0) {
-        const div = document.createElement("div");
-        div.className = "export-empty";
-        div.textContent = "当前日期无设备标签";
-        deviceListEl.appendChild(div);
-      } else {
-        deviceTags.forEach(tag => {
-          deviceListEl.appendChild(createTagItem(tag, "device"));
-        });
-      }
-
-      updateSelectedCount();
-    }
-
-    function createTagItem(label, type) {
-      const wrapper = document.createElement("label");
-      wrapper.className = "export-tag-item";
-
-      const input = document.createElement("input");
-      input.type = "checkbox";
-      input.dataset.type  = type;
-      input.dataset.label = label;
-      input.addEventListener("change", updateSelectedCount);
-
-      const span = document.createElement("span");
-      span.textContent = label;
-
-      wrapper.appendChild(input);
-      wrapper.appendChild(span);
-
-      return wrapper;
-    }
-
-    function updateSelectedCount() {
-      const cbs = document.querySelectorAll(".export-tag-item input[type='checkbox']");
-      let waybillCount = 0;
-      let deviceCount  = 0;
-
-      cbs.forEach(cb => {
-        if (cb.checked) {
-          if (cb.dataset.type === "waybill") waybillCount++;
-          if (cb.dataset.type === "device")  deviceCount++;
-        }
-      });
-
-      document.getElementById("countWaybill").textContent = waybillCount;
-      document.getElementById("countDevice").textContent  = deviceCount;
-    }
-
-    function getSelectedTags(type) {
-      const cbs = document.querySelectorAll(`.export-tag-item input[data-type="${type}"]`);
-      const tags = [];
-      cbs.forEach(cb => {
-        if (cb.checked) tags.push(cb.dataset.label);
-      });
-      return tags;
-    }
-
-    function exportWaybillCSV() {
-      const workDate = getWorkDate();
-      const selectedTags = getSelectedTags("waybill");
-      const all = state.waybills.filter(w => w.date === workDate);
-
-      const data = all.filter(w => {
-        if (selectedTags.length === 0) return true;
-        return selectedTags.includes(w.tag);
-      });
-
-      if (data.length === 0) {
-        showMessage("当前日期下所选标签没有运单数据", "error");
-        return;
-      }
-
-      const rows = [];
-      rows.push(["日期", "运单号", "客户标签", "备注"]);
-      data.forEach(w => {
-        rows.push([w.date, w.waybillNo, w.tag || "", w.remark || ""]);
-      });
-
-      downloadCSV(`waybill_${workDate}.csv`, rows);
-      showMessage("已导出运单 CSV", "success");
-    }
-
-    function exportDeviceCSV() {
-      const workDate = getWorkDate();
-      const selectedTags = getSelectedTags("device");
-      const all = state.devices.filter(d => d.date === workDate);
-
-      const data = all.filter(d => {
-        if (selectedTags.length === 0) return true;
-        return selectedTags.includes(d.tag);
-      });
-
-      if (data.length === 0) {
-        showMessage("当前日期下所选标签没有设备数据", "error");
-        return;
-      }
-
-      const rows = [];
-      rows.push(["日期","SN/IMEI","SKU","型号","颜色","容量","客户标签","绑定运单号","备注"]);
-      data.forEach(d => {
-        rows.push([
-          d.date,
-          d.sn,
-          d.sku || "",
-          d.model || "",
-          d.color || "",
-          d.capacity || "",
-          d.tag || "",
-          d.waybillNo || "",
-          d.remark || ""
-        ]);
-      });
-
-      downloadCSV(`device_${workDate}.csv`, rows);
-      showMessage("已导出设备 CSV", "success");
-    }
-
-    function downloadCSV(filename, rows) {
-      const content = rows
-        .map(row =>
-          row
-            .map(cell => {
-              const v = (cell ?? "").toString().replace(/"/g, '""');
-              return `"${v}"`;
-            })
-            .join(",")
-        )
-        .join("\r\n");
-
-      const blob = new Blob(["\ufeff" + content], {
-        type: "text/csv;charset=utf-8;"
-      });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
-    // ========== 初始化 & 事件绑定 ==========
-    document.addEventListener("DOMContentLoaded", () => {
-      setTodayAsWorkDate();
-
-      document.getElementById("workDate").addEventListener("change", () => {
-        renderWaybillTable();
-        renderDeviceTable();
-        renderWaybillSelectOptions();
-        renderSummary();
-      });
-
-      // Tab 切换
-      document.querySelectorAll(".tab-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-          document.querySelectorAll(".tab-content").forEach(tab => tab.classList.remove("active"));
-
-          btn.classList.add("active");
-          const target = btn.dataset.target;
-          document.getElementById(target).classList.add("active");
-        });
-      });
-
-      // 表单提交
-      document.getElementById("waybillForm").addEventListener("submit", e => {
-        e.preventDefault();
-        saveWaybill();
-      });
-
-      document.getElementById("deviceForm").addEventListener("submit", e => {
-        e.preventDefault();
-        saveDevice();
-      });
-
-      document.getElementById("skuForm").addEventListener("submit", e => {
-        e.preventDefault();
-        saveSkuMapping();
-      });
-
-      // 表格删除（事件代理）
-      document.getElementById("waybillTableBody").addEventListener("click", e => {
-        const target = e.target;
-        if (target.classList.contains("table-action") && target.dataset.type === "waybill") {
-          const idx = Number(target.dataset.index);
-          if (!Number.isNaN(idx)) deleteWaybillByIndex(idx);
-        }
-      });
-
-      document.getElementById("deviceTableBody").addEventListener("click", e => {
-        const target = e.target;
-        if (target.classList.contains("table-action") && target.dataset.type === "device") {
-          const idx = Number(target.dataset.index);
-          if (!Number.isNaN(idx)) deleteDeviceByIndex(idx);
-        }
-      });
-
-      document.getElementById("skuTableBody").addEventListener("click", e => {
-        const target = e.target;
-        if (target.classList.contains("table-action") && target.dataset.type === "sku") {
-          const idx = Number(target.dataset.index);
-          if (!Number.isNaN(idx)) deleteSkuByIndex(idx);
-        }
-      });
-
-      // ESC 关闭导出弹窗
-      document.addEventListener("keydown", e => {
-        if (e.key === "Escape") closeExportModal();
-      });
-
-      // 初次渲染空状态
-      renderWaybillTable();
-      renderDeviceTable();
-      renderWaybillSelectOptions();
-      renderSummary();
-      renderSkuTable();
+  }
+}
+function save(){ localStorage.setItem(storeKey,JSON.stringify(DB)); }
+
+/* ========== 小工具 ========= */
+const $=s=>document.querySelector(s);
+const el=(t,a={},h='')=>{const n=document.createElement(t);for(const k in a){k==='class'?n.className=a[k]:n.setAttribute(k,a[k])}if(h)n.innerHTML=h;return n;}
+function nowPair(){
+  const dt=new Date();
+  return {
+    created_at:dt.toLocaleString('zh-CN',{hour12:false}),
+    created_date:dt.toISOString().slice(0,10)
+  };
+}
+function beep(kind='ok'){
+  if(!DB.settings.beep) return;
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.type='sine';
+  o.frequency.value= kind==='ok'?880: kind==='warn'?440:220;
+  g.gain.value=0.05; o.connect(g); g.connect(ctx.destination);
+  o.start(); setTimeout(()=>{o.stop();ctx.close()},160);
+}
+
+/* ========== 语音（女声英文） ========= */
+const VOICE_URLS={
+  trackingErr:'voice_tracking_error_en_female.mp3',
+  serialErr:'voice_serial_error_en_female.mp3',
+  dupSerial:'voice_duplicate_serial_en_female.mp3',
+  dupTracking:'voice_duplicate_tracking_en_female.mp3' // v3.6 新增：运单重复
+};
+function speakTextEn(text){
+  if(!('speechSynthesis' in window)) return;
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='en-US';
+  window.speechSynthesis.speak(u);
+}
+function playVoice(kind, fallbackText){
+  if(!DB.settings.voice) return;
+  const url=VOICE_URLS[kind];
+  if(url){
+    const audio=new Audio(url);
+    audio.play().catch(()=>{ if(fallbackText) speakTextEn(fallbackText); });
+  }else if(fallbackText){
+    speakTextEn(fallbackText);
+  }
+}
+function flash(node, cls){
+  node.classList.remove('warn','err'); void node.offsetWidth;
+  node.classList.add(cls); setTimeout(()=>node.classList.remove(cls),700);
+}
+
+/* ========== Tab 切换 ========= */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    const n=t.dataset.tab;
+    ['tracking','device','summary','sku','tags','settings'].forEach(id=>{
+      $('#panel-'+id).classList.toggle('hidden',id!==n);
     });
-  </script>
+    if(n==='summary'){ renderSummary(); }
+    if(n==='sku'){ renderSKU(); }
+    if(n==='tags'){ renderTags(); }
+  });
+});
+
+/* ========== FedEx / UPS 运单识别 ========= */
+function normalizeTracking(raw, forceType){
+  let s=(raw||'').toUpperCase().trim().replace(/\s+/g,'');
+  let type='Unknown';
+  if(forceType && forceType!=='auto') type=forceType;
+  if(!forceType || forceType==='auto'){
+    if(/^1Z[0-9A-Z]{16}$/.test(s)) type='UPS';
+    else if(/^\d{12,34}$/.test(s)) type='FedEx';
+  }
+  if(type==='FedEx' && DB.settings.fedTail && /^\d+$/.test(s) && s.length>12){
+    s=s.slice(-12); // 保留尾 12 位
+  }
+  return {tracking:s,type};
+}
+function validTracking(tracking,type){
+  if(!tracking) return false;
+  if(type==='UPS') return /^1Z[0-9A-Z]{16}$/.test(tracking);
+  if(type==='FedEx') return /^\d{12}$/.test(tracking); // 已经截尾，只接受 12 位
+  return false;
+}
+
+/* ========== 标签工具 ========= */
+function ensureTagExists(tag){
+  const t=(tag||'').trim();
+  if(!t) return;
+  if(!DB.tags.includes(t)){
+    DB.tags.push(t);
+    save();
+    refreshTagDatalist();
+  }
+}
+function allTagsFromData(){
+  const set=new Set(DB.tags || []);
+  DB.tracking.forEach(r=>{ if(r.tag) set.add(r.tag); });
+  DB.device.forEach(r=>{ if(r.tag) set.add(r.tag); });
+  return [...set].sort((a,b)=>a.localeCompare(b,'zh-CN'));
+}
+function refreshTagDatalist(){
+  const dl=$('#tagList'); if(!dl) return;
+  dl.innerHTML='';
+  allTagsFromData().forEach(t=>{
+    const opt=document.createElement('option');
+    opt.value=t;
+    dl.appendChild(opt);
+  });
+}
+
+/* ========== 运单模块 ========= */
+const tTag=$('#t_tag'), tInput=$('#t_input'), tType=$('#t_type'), tNote=$('#t_note');
+$('#tFocus').onclick=()=>tInput.focus();
+$('#tAdd').onclick=()=>addTracking(tInput.value);
+$('#tClear').onclick=()=>{
+  if(!DB.settings.confirmDel || confirm('确定清空全部运单？')){
+    DB.tracking=[]; save(); renderTracking(); renderSummary(); renderTags();
+  }
+};
+$('#tExport').onclick=()=>exportCSVAll('tracking');
+$('#tImport').addEventListener('change',e=>importCSV(e,'tracking'));
+let tDeb;
+tInput.addEventListener('input',()=>{
+  if(!DB.settings.autoScan) return;
+  clearTimeout(tDeb);
+  tDeb=setTimeout(()=>addTracking(tInput.value,true),180);
+});
+tInput.addEventListener('keydown',e=>{
+  if(e.key==='Enter') addTracking(tInput.value);
+});
+
+function addTracking(raw, fromAuto=false){
+  raw=(raw||'').trim();
+  if(!raw) return;
+  const {tracking,type}=normalizeTracking(raw,tType.value);
+  if(!tracking || !validTracking(tracking,type)){
+    flash(tInput,'err');
+    beep('bad');
+    playVoice('trackingErr','Tracking number error');
+    return;
+  }
+
+  // v3.6：运单号重复直接拦截，不保存
+  const dup=DB.tracking.some(x=>x.tracking===tracking);
+  if(dup){
+    flash(tInput,'err');
+    beep('bad');
+    playVoice('dupTracking','Duplicate tracking, not saved');
+    return;
+  }
+
+  const tag=tTag.value.trim();
+  const {created_at,created_date}=nowPair();
+  DB.tracking.push({
+    id:Date.now()+Math.random(),
+    tag,
+    tracking,
+    type,
+    note:tNote.value.trim(),
+    created_at,
+    created_date
+  });
+  ensureTagExists(tag);
+  save();
+  tInput.value='';
+  tNote.value='';
+  beep('ok');
+  renderTracking();
+  renderSummary();
+  renderTags();
+  if(!fromAuto) tInput.focus();
+}
+function renderTracking(){
+  const body=$('#tBody'); body.innerHTML='';
+  const ups=DB.tracking.filter(x=>x.type==='UPS').length;
+  const fed=DB.tracking.filter(x=>x.type==='FedEx').length;
+  $('#tUPS').textContent=ups;
+  $('#tFedEx').textContent=fed;
+  $('#tCount').textContent=DB.tracking.length;
+  $('#tTags').textContent=new Set(DB.tracking.map(x=>x.tag||'')).size;
+  DB.tracking.slice().reverse().forEach(r=>{
+    const tr=el('tr',{class:'tracking-row'});
+    tr.appendChild(el('td',{},`<span class="chip mono">${r.tag||'-'}</span>`));
+    tr.appendChild(el('td',{},`<span class="mono">${r.tracking}</span>`));
+    tr.appendChild(el('td',{},r.type));
+    tr.appendChild(el('td',{},r.created_at));
+    tr.appendChild(el('td',{},r.note||'')); 
+    const ops=el('td');
+    const del=el('button',{class:'btn sm bad'},'删除');
+    del.onclick=()=>{
+      if(!DB.settings.confirmDel || confirm('删除该运单？')){
+        DB.tracking=DB.tracking.filter(x=>x.id!==r.id);
+        save(); renderTracking(); renderSummary(); renderTags();
+      }
+    };
+    ops.appendChild(del);
+    tr.appendChild(ops);
+    body.appendChild(tr);
+  });
+}
+
+/* ========== 设备模块 ========= */
+const dTag=$('#d_tag'), dSerial=$('#d_serial'), dUPC=$('#d_upc'),
+      dDev=$('#d_device'), dCap=$('#d_capacity'), dCol=$('#d_color');
+
+$('#dClear').onclick=()=>{
+  if(!DB.settings.confirmDel || confirm('确定清空全部设备？')){
+    DB.device=[]; save(); renderDevice(); renderSummary(); renderTags();
+  }
+};
+$('#dExport').onclick=()=>exportCSVAll('device');
+$('#dImport').addEventListener('change',e=>importCSV(e,'device'));
+
+dSerial.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){ dUPC.focus(); }
+});
+
+let upcDeb;
+dUPC.addEventListener('input',()=>{
+  const upc=dUPC.value.trim();
+  // SKU 自动匹配
+  if(upc && DB.sku[upc]){
+    const {device,capacity,color}=DB.sku[upc];
+    dDev.value=device||''; dCap.value=capacity||''; dCol.value=color||'';
+  }
+  if(!DB.settings.autoScan) return;
+  clearTimeout(upcDeb);
+  upcDeb=setTimeout(()=>addDevice(true),180);
+});
+dUPC.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){ addDevice(false); }
+});
+
+function isValidSerial(sn){
+  return /^[0-9A-Z]{11}$/.test(sn);
+}
+function addDevice(fromAuto){
+  const tag=dTag.value.trim();
+  const serial=(dSerial.value||'').trim().toUpperCase();
+  const upc=(dUPC.value||'').trim();
+  if(!serial && !upc){
+    dSerial.focus(); return;
+  }
+  // SN 校验：11 位字母+数字
+  if(serial && !isValidSerial(serial)){
+    flash(dSerial,'err');
+    beep('bad');
+    playVoice('serialErr','Serial number error');
+    return;
+  }
+  // SN 重复检查
+  if(serial){
+    const dup=DB.device.some(x=>x.serial===serial);
+    if(dup){
+      flash(dSerial,'err');
+      beep('bad');
+      playVoice('dupSerial','Serial number duplicated');
+      if(DB.settings.blockDupSN) return;
+    }
+  }
+  // UPC 重复仅警告
+  if(upc && DB.device.some(x=>x.upc===upc)){
+    flash(dUPC,'warn');
+    beep('warn');
+  }
+  // SKU 自动填充（若还没填且命中）
+  if(upc && (!dDev.value || !dCap.value || !dCol.value) && DB.sku[upc]){
+    const s=DB.sku[upc];
+    if(!dDev.value) dDev.value=s.device||'';
+    if(!dCap.value) dCap.value=s.capacity||'';
+    if(!dCol.value) dCol.value=s.color||'';
+  }else if(upc && !DB.sku[upc]){
+    flash(dUPC,'warn');
+    beep('warn');
+  }
+
+  const {created_at,created_date}=nowPair();
+  DB.device.push({
+    id:Date.now()+Math.random(),
+    tag,
+    serial,
+    upc,
+    device:dDev.value.trim(),
+    capacity:dCap.value.trim(),
+    color:dCol.value.trim(),
+    status:'OK',
+    created_at,
+    created_date
+  });
+  ensureTagExists(tag);
+  save();
+  dSerial.value=''; dUPC.value=''; dDev.value=''; dCap.value=''; dCol.value='';
+  beep('ok');
+  renderDevice();
+  renderSummary();
+  renderTags();
+  dSerial.focus();
+}
+function renderDevice(){
+  const body=$('#dBody'); body.innerHTML='';
+  const uniq=new Set(DB.device.map(x=>x.serial).filter(Boolean));
+  $('#dCount').textContent=DB.device.length;
+  $('#dUnique').textContent=uniq.size;
+  $('#dTags').textContent=new Set(DB.device.map(x=>x.tag||'')).size;
+  $('#dLast').textContent=DB.device.length? DB.device[DB.device.length-1].created_at : '-';
+
+  DB.device.slice().reverse().forEach(r=>{
+    const tr=el('tr',{class:'tracking-row'});
+    tr.appendChild(el('td',{},`<span class="chip mono">${r.tag||'-'}</span>`));
+    const sCell=el('td',{}, r.serial?`<span class="mono">${r.serial}</span>`:'-');
+    if(r.serial && DB.device.filter(x=>x.serial===r.serial).length>1){
+      sCell.style.color='var(--bad)'; sCell.style.fontWeight='700';
+    }
+    tr.appendChild(sCell);
+    tr.appendChild(el('td',{}, r.upc?`<span class="mono">${r.upc}</span>`:'-'));
+    tr.appendChild(el('td',{}, r.device||'')); 
+    tr.appendChild(el('td',{}, r.capacity||'')); 
+    tr.appendChild(el('td',{}, r.color||'')); 
+    tr.appendChild(el('td',{}, r.created_at)); 
+    tr.appendChild(el('td',{}, r.status||'')); 
+    const ops=el('td');
+    const del=el('button',{class:'btn sm bad'},'删除');
+    del.onclick=()=>{
+      if(!DB.settings.confirmDel || confirm('删除该设备？')){
+        DB.device=DB.device.filter(x=>x.id!==r.id);
+        save(); renderDevice(); renderSummary(); renderTags();
+      }
+    };
+    ops.appendChild(del);
+    tr.appendChild(ops);
+    body.appendChild(tr);
+  });
+}
+
+/* ========== 汇总 / 明细 ========= */
+function groupBy(arr,keyFn){
+  const m=new Map();
+  arr.forEach(x=>{
+    const k=keyFn(x);
+    if(!m.has(k)) m.set(k,[]);
+    m.get(k).push(x);
+  });
+  return m;
+}
+
+// 读取筛选条件
+function getSummaryFilters(){
+  const dateInput=$('#sumDate');
+  const tagSel=$('#sumTag');
+  const tf=$('#sumTimeFrom');
+  const tt=$('#sumTimeTo');
+  return {
+    date: dateInput && dateInput.value ? dateInput.value : '',
+    tag: tagSel ? (tagSel.value || '') : '',
+    timeFrom: tf && tf.value ? tf.value : '',
+    timeTo: tt && tt.value ? tt.value : ''
+  };
+}
+function passTimeFilter(created_at, f){
+  if(!created_at) return true;
+  // 抓 HH:MM
+  const m=created_at.match(/\d{2}:\d{2}/);
+  if(!m) return true;
+  const t=m[0];
+  if(f.timeFrom && t < f.timeFrom) return false;
+  if(f.timeTo && t > f.timeTo) return false;
+  return true;
+}
+function passSummaryFilter(r,f){
+  if(f.date && r.created_date!==f.date) return false;
+  if(f.tag && (r.tag||'')!==f.tag) return false;
+  if((f.timeFrom || f.timeTo) && !passTimeFilter(r.created_at||'',f)) return false;
+  return true;
+}
+// 填充筛选里的标签下拉
+function buildSummaryTagOptions(){
+  const sel=$('#sumTag'); if(!sel) return;
+  const prev=sel.value;
+  sel.innerHTML='';
+  const optAll=document.createElement('option');
+  optAll.value=''; optAll.textContent='全部';
+  sel.appendChild(optAll);
+  allTagsFromData().forEach(tag=>{
+    const o=document.createElement('option');
+    o.value=tag; o.textContent=tag;
+    sel.appendChild(o);
+  });
+  if(prev && [...sel.options].some(o=>o.value===prev)){
+    sel.value=prev;
+  }
+}
+
+function renderSummary(){
+  buildSummaryTagOptions();
+  const f=getSummaryFilters();
+
+  const trackingFiltered=DB.tracking.filter(r=>passSummaryFilter(r,f));
+  const deviceFiltered=DB.device.filter(r=>passSummaryFilter(r,f));
+
+  // 运单汇总（按标签）
+  const sumT=$('#sumT'); sumT.innerHTML='';
+  const gT=groupBy(trackingFiltered,x=>x.tag||'');
+  [...gT.entries()].sort((a,b)=>(a[0]||'').localeCompare(b[0]||'','zh-CN')).forEach(([tag,arr])=>{
+    const ups=arr.filter(x=>x.type==='UPS').length;
+    const fed=arr.filter(x=>x.type==='FedEx').length;
+    const last=arr[arr.length-1]?.created_at || '-';
+    const tr=el('tr',{class:'sum-row'});
+    tr.appendChild(el('td',{},`<span class="chip mono">${tag||'-'}</span>`));
+    tr.appendChild(el('td',{},String(ups)));
+    tr.appendChild(el('td',{},String(fed)));
+    tr.appendChild(el('td',{},String(arr.length)));
+    tr.appendChild(el('td',{},last));
+    const op=el('td');
+    const btn=el('button',{class:'btn sm'},'▶ 展开'); 
+    let open=false; let rows=[];
+    btn.onclick=()=>{
+      open=!open; btn.textContent=open?'▼ 收起':'▶ 展开';
+      if(open){
+        arr.slice().reverse().forEach(r=>{
+          const dr=el('tr',{class:'exp'});
+          dr.innerHTML=`<td></td><td colspan="3"><span class="mono">${r.type}</span> · <span class="mono">${r.tracking}</span></td><td>${r.created_at}</td><td></td>`;
+          tr.parentNode.insertBefore(dr,tr.nextSibling);
+          rows.push(dr);
+        });
+      }else{
+        rows.forEach(x=>x.remove()); rows=[];
+      }
+    };
+    op.appendChild(btn);
+    tr.appendChild(op);
+    sumT.appendChild(tr);
+  });
+
+  // 设备汇总（按 标签 + 机型 + 容量 + 颜色）
+  const sumD=$('#sumD'); sumD.innerHTML='';
+  const gD=groupBy(deviceFiltered,x=>`${x.tag||''}||${x.device||''}||${x.capacity||''}||${x.color||''}`);
+  [...gD.entries()].sort((a,b)=>a[0].localeCompare(b[0],'zh-CN')).forEach(([k,arr])=>{
+    const [tag,dev,cap,col]=k.split('||');
+    const tr=el('tr',{class:'sum-row'});
+    tr.appendChild(el('td',{},`<span class="chip mono">${tag||'-'}</span>`));
+    tr.appendChild(el('td',{},dev||'')); 
+    tr.appendChild(el('td',{},cap||'')); 
+    tr.appendChild(el('td',{},col||'')); 
+    tr.appendChild(el('td',{},String(arr.length)));
+    const op=el('td');
+    const btn=el('button',{class:'btn sm'},'▶ 展开');
+    let open=false; let rows=[];
+    btn.onclick=()=>{
+      open=!open; btn.textContent=open?'▼ 收起':'▶ 展开';
+      if(open){
+        arr.slice().reverse().forEach(r=>{
+          const dr=el('tr',{class:'exp'});
+          dr.innerHTML=`<td></td><td colspan="3">SN <span class="mono">${r.serial||'-'}</span> · UPC <span class="mono">${r.upc||'-'}</span></td><td>${r.created_at}</td><td></td>`;
+          tr.parentNode.insertBefore(dr,tr.nextSibling);
+          rows.push(dr);
+        });
+      }else{
+        rows.forEach(x=>x.remove()); rows=[];
+      }
+    };
+    op.appendChild(btn);
+    tr.appendChild(op);
+    sumD.appendChild(tr);
+  });
+
+  // 按机型 + 日期 汇总（不分标签：Device + Capacity + Color + Date）
+  const sumM=$('#sumModel'); sumM.innerHTML='';
+  const gM=groupBy(deviceFiltered,x=>`${x.device||''}||${x.capacity||''}||${x.color||''}||${x.created_date||''}`);
+  [...gM.entries()].sort((a,b)=>a[0].localeCompare(b[0],'zh-CN')).forEach(([k,arr])=>{
+    const [dev,cap,col,date]=k.split('||');
+    const tr=el('tr',{class:'sum-row'});
+    tr.appendChild(el('td',{},dev||'')); 
+    tr.appendChild(el('td',{},cap||'')); 
+    tr.appendChild(el('td',{},col||'')); 
+    tr.appendChild(el('td',{},String(arr.length)));
+    tr.appendChild(el('td',{},date||'')); 
+    sumM.appendChild(tr);
+  });
+}
+
+// 筛选按钮 + 导出（基于当前筛选）
+$('#sumApply').onclick=()=>renderSummary();
+
+function exportSummaryTracking(){
+  const f=getSummaryFilters();
+  const rows=[['tag','tracking','type','note','created_at','created_date']];
+  DB.tracking.forEach(r=>{
+    if(!passSummaryFilter(r,f)) return;
+    rows.push([r.tag||'',r.tracking||'',r.type||'',r.note||'',r.created_at||'',r.created_date||'']);
+  });
+  downloadCSV('tracking_summary_'+(f.date||'all'),rows);
+}
+function exportSummaryDevice(){
+  const f=getSummaryFilters();
+  const rows=[['tag','serial','upc','device','capacity','color','status','created_at','created_date']];
+  DB.device.forEach(r=>{
+    if(!passSummaryFilter(r,f)) return;
+    rows.push([r.tag||'',r.serial||'',r.upc||'',r.device||'',r.capacity||'',r.color||'',r.status||'',r.created_at||'',r.created_date||'']);
+  });
+  downloadCSV('device_summary_'+(f.date||'all'),rows);
+}
+function exportSummaryModel(){
+  const f=getSummaryFilters();
+  const devFiltered=DB.device.filter(r=>passSummaryFilter(r,f));
+  const g=groupBy(devFiltered,x=>`${x.device||''}||${x.capacity||''}||${x.color||''}||${x.created_date||''}`);
+  const rows=[['device','capacity','color','count','created_date']];
+  [...g.entries()].forEach(([k,arr])=>{
+    const [dev,cap,col,date]=k.split('||');
+    rows.push([dev||'',cap||'',col||'',String(arr.length),date||'']);
+  });
+  downloadCSV('device_model_summary_'+(f.date||'all'),rows);
+}
+$('#sumExportTracking').onclick=exportSummaryTracking;
+$('#sumExportDevice').onclick=exportSummaryDevice;
+$('#sumExportModel').onclick=exportSummaryModel;
+
+/* 对账导出：以设备为主，附带同 Tag 最近运单号（保留） */
+function doExportReconcile(){
+  const trackByTag=groupBy(DB.tracking,x=>x.tag||'');
+  const rows=[['tag','serial','upc','device','capacity','color','created_at','tracking_last_by_tag']];
+  DB.device.forEach(d=>{
+    const arr=trackByTag.get(d.tag||'')||[];
+    const last=arr.length? arr[arr.length-1].tracking : '';
+    rows.push([
+      d.tag||'',
+      d.serial||'',
+      d.upc||'',
+      d.device||'',
+      d.capacity||'',
+      d.color||'',
+      d.created_at||'',
+      last
+    ]);
+  });
+  downloadCSV('reconcile',rows);
+}
+$('#sumExportReconcile').onclick=doExportReconcile;
+
+/* ========== SKU 录入 ========= */
+const skuUpc=$('#sku_upc'), skuDev=$('#sku_device'),
+      skuCap=$('#sku_capacity'), skuCol=$('#sku_color');
+
+$('#skuAdd').onclick=()=>{
+  const upc=(skuUpc.value||'').trim();
+  if(!upc) return;
+  DB.sku[upc]={
+    device:skuDev.value.trim(),
+    capacity:skuCap.value.trim(),
+    color:skuCol.value.trim()
+  };
+  save();
+  skuUpc.value=''; skuDev.value=''; skuCap.value=''; skuCol.value='';
+  beep('ok');
+  renderSKU();
+};
+$('#skuFile').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    const lines=r.result.split(/\r?\n/).filter(x=>x.trim());
+    lines.slice(1).forEach(row=>{
+      const cells=row.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(x=>x.replace(/^"|"$/g,'').replace(/""/g,'"'));
+      const [u,d,c,co]=cells;
+      if(u) DB.sku[u.trim()]={device:(d||'').trim(),capacity:(c||'').trim(),color:(co||'').trim()};
+    });
+    save(); renderSKU(); beep('ok'); e.target.value='';
+  };
+  r.readAsText(f,'utf-8');
+});
+$('#skuPasteBtn').onclick=()=>{
+  const txt=$('#skuPaste').value||'';
+  if(!txt.trim()) return;
+  txt.split(/\r?\n/).forEach(line=>{
+    if(!line.trim()) return;
+    const cells=line.split(/\t|,/);
+    const [u,d,c,co]=[cells[0],cells[1],cells[2],cells[3]].map(x=>(x||'').trim());
+    if(u) DB.sku[u]={device:d||'',capacity:c||'',color:co||''};
+  });
+  save(); renderSKU(); beep('ok');
+};
+$('#skuExport').onclick=()=>{
+  const rows=[['upc','device','capacity','color']];
+  Object.entries(DB.sku).forEach(([u,v])=>{
+    rows.push([u,v.device||'',v.capacity||'',v.color||'']);
+  });
+  downloadCSV('sku_map',rows);
+};
+$('#skuClear').onclick=()=>{
+  if(!DB.settings.confirmDel || confirm('清空全部 SKU 映射？')){
+    DB.sku={}; save(); renderSKU();
+  }
+};
+function renderSKU(){
+  const body=$('#skuBody'); body.innerHTML='';
+  const arr=Object.entries(DB.sku).map(([u,v])=>({upc:u,...v}))
+    .sort((a,b)=>a.upc.localeCompare(b.upc));
+  arr.forEach(row=>{
+    const tr=el('tr');
+    tr.appendChild(el('td',{},`<span class="mono">${row.upc}</span>`));
+    tr.appendChild(el('td',{},row.device||'')); 
+    tr.appendChild(el('td',{},row.capacity||'')); 
+    tr.appendChild(el('td',{},row.color||'')); 
+    const ops=el('td');
+    const del=el('button',{class:'btn sm bad'},'删除');
+    del.onclick=()=>{
+      if(!DB.settings.confirmDel || confirm('删除此 SKU？')){
+        delete DB.sku[row.upc]; save(); renderSKU();
+      }
+    };
+    ops.appendChild(del);
+    tr.appendChild(ops);
+    body.appendChild(tr);
+  });
+}
+
+/* ========== 标签管理 ========= */
+$('#tagAdd').onclick=()=>{
+  const t=($('#tagNew').value||'').trim();
+  if(!t) return;
+  if(!DB.tags.includes(t)) DB.tags.push(t);
+  $('#tagNew').value='';
+  save();
+  refreshTagDatalist();
+  renderTags();
+};
+$('#tagRefresh').onclick=()=>{ renderTags(); };
+
+function renderTags(){
+  const body=$('#tagBody'); body.innerHTML='';
+  const tags=allTagsFromData();
+  tags.forEach(tag=>{
+    const tCount=DB.tracking.filter(r=>r.tag===tag).length;
+    const dCount=DB.device.filter(r=>r.tag===tag).length;
+    const tr=el('tr',{class:'tracking-row'});
+    tr.appendChild(el('td',{},`<span class="chip mono">${tag}</span>`));
+    tr.appendChild(el('td',{},String(tCount)));
+    tr.appendChild(el('td',{},String(dCount)));
+    const ops=el('td');
+    const btnEdit=el('button',{class:'btn sm'},'重命名');
+    const btnDel=el('button',{class:'btn sm bad'},'删除');
+    btnEdit.onclick=()=>{
+      const next=prompt('输入新的标签名称：',tag);
+      if(!next) return;
+      const newTag=next.trim();
+      if(!newTag || newTag===tag) return;
+      DB.tracking.forEach(r=>{ if(r.tag===tag) r.tag=newTag; });
+      DB.device.forEach(r=>{ if(r.tag===tag) r.tag=newTag; });
+      DB.tags=DB.tags.filter(x=>x!==tag);
+      if(!DB.tags.includes(newTag)) DB.tags.push(newTag);
+      save();
+      refreshTagDatalist();
+      renderTracking();
+      renderDevice();
+      renderSummary();
+      renderTags();
+    };
+    btnDel.onclick=()=>{
+      if(!DB.settings.confirmDel || confirm('仅从“标签列表”中删除，不会修改历史记录，确定？')){
+        DB.tags=DB.tags.filter(x=>x!==tag);
+        save();
+        refreshTagDatalist();
+        renderTags();
+      }
+    };
+    ops.appendChild(btnEdit);
+    ops.appendChild(btnDel);
+    tr.appendChild(ops);
+    body.appendChild(tr);
+  });
+}
+
+/* ========== 导入导出通用 ========= */
+function toCSV(arr){
+  return arr.map(r=>r.map(c=>{
+    const s=(c==null?'':String(c));
+    return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+  }).join(',')).join('\n');
+}
+function downloadCSV(name, rows){
+  const blob=new Blob(["\uFEFF"+toCSV(rows)],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.download=`${name}_${Date.now()}.csv`;
+  a.href=URL.createObjectURL(blob);
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),500);
+}
+function exportCSVAll(kind){
+  if(kind==='tracking'){
+    const rows=[['tag','tracking','type','note','created_at','created_date']];
+    DB.tracking.forEach(r=>{
+      rows.push([r.tag||'',r.tracking||'',r.type||'',r.note||'',r.created_at||'',r.created_date||'']);
+    });
+    downloadCSV('tracking_all',rows);
+  }else{
+    const rows=[['tag','serial','upc','device','capacity','color','status','created_at','created_date']];
+    DB.device.forEach(r=>{
+      rows.push([r.tag||'',r.serial||'',r.upc||'',r.device||'',r.capacity||'',r.color||'',r.status||'',r.created_at||'',r.created_date||'']);
+    });
+    downloadCSV('device_all',rows);
+  }
+}
+function importCSV(evt,kind){
+  const f=evt.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    const lines=r.result.split(/\r?\n/).filter(x=>x.trim());
+    if(!lines.length){ evt.target.value=''; return; }
+    lines.shift(); // skip header
+    const today=new Date().toISOString().slice(0,10);
+    lines.forEach(line=>{
+      const cells=line.split(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/).map(s=>s.replace(/^"|"$/g,'').replace(/""/g,'"'));
+      if(kind==='tracking'){
+        const [tag,tracking,type,note,created_at,created_date]=cells;
+        const norm=normalizeTracking(tracking,type==='auto'?'auto':type);
+        const dDate=(created_date||'').trim()||today;
+        DB.tracking.push({
+          id:Date.now()+Math.random(),
+          tag:(tag||'').trim(),
+          tracking:norm.tracking,
+          type:norm.type||'Unknown',
+          note:(note||'').trim(),
+          created_at:created_at||nowPair().created_at,
+          created_date:dDate
+        });
+        ensureTagExists(tag);
+      }else{
+        const [tag,serial,upc,device,capacity,color,status,created_at,created_date]=cells;
+        const dDate=(created_date||'').trim()||today;
+        DB.device.push({
+          id:Date.now()+Math.random(),
+          tag:(tag||'').trim(),
+          serial:(serial||'').trim().toUpperCase(),
+          upc:(upc||'').trim(),
+          device:(device||'').trim(),
+          capacity:(capacity||'').trim(),
+          color:(color||'').trim(),
+          status:(status||'').trim() || 'OK',
+          created_at:created_at||nowPair().created_at,
+          created_date:dDate
+        });
+        ensureTagExists(tag);
+      }
+    });
+    save();
+    if(kind==='tracking'){ renderTracking(); }
+    else{ renderDevice(); }
+    renderSummary();
+    renderTags();
+    evt.target.value='';
+  };
+  r.readAsText(f,'utf-8');
+}
+
+/* ========== 设置 ========= */
+const setFedTail=$('#setFedTail'),
+      setVoice=$('#setVoice'),
+      setBeep=$('#setBeep'),
+      setBlockDupSN=$('#setBlockDupSN'),
+      setAutoScan=$('#setAutoScan'),
+      setConfirm=$('#setConfirmDel');
+
+function loadSettingsUI(){
+  setFedTail.checked=!!DB.settings.fedTail;
+  setVoice.checked=!!DB.settings.voice;
+  setBeep.checked=!!DB.settings.beep;
+  setBlockDupSN.checked=!!DB.settings.blockDupSN;
+  setAutoScan.checked=!!DB.settings.autoScan;
+  setConfirm.checked=!!DB.settings.confirmDel;
+}
+[setFedTail,setVoice,setBeep,setBlockDupSN,setAutoScan,setConfirm].forEach(inp=>{
+  inp.addEventListener('change',()=>{
+    DB.settings.fedTail=setFedTail.checked;
+    DB.settings.voice=setVoice.checked;
+    DB.settings.beep=setBeep.checked;
+    DB.settings.blockDupSN=setBlockDupSN.checked;
+    DB.settings.autoScan=setAutoScan.checked;
+    DB.settings.confirmDel=setConfirm.checked;
+    save();
+  });
+});
+
+/* ========== 导出弹窗：按日期 + 标签 ========= */
+const exportModal=$('#exportModal'),
+      exportBackdrop=$('#exportBackdrop'),
+      exportClose=$('#exportClose'),
+      expDate=$('#expDate'),
+      expTagsTracking=$('#expTagsTracking'),
+      expTagsDevice=$('#expTagsDevice');
+
+function openExportModal(){
+  const today=new Date().toISOString().slice(0,10);
+  expDate.value=today;
+  buildExportTagCheckboxes();
+  exportModal.classList.remove('hidden');
+  exportModal.classList.add('show');
+}
+function closeExportModal(){
+  exportModal.classList.remove('show');
+  exportModal.classList.add('hidden');
+}
+function buildExportTagCheckboxes(){
+  expTagsTracking.innerHTML='';
+  expTagsDevice.innerHTML='';
+  const tags=allTagsFromData();
+  if(!tags.length){
+    expTagsTracking.textContent='当前没有标签数据';
+    expTagsDevice.textContent='当前没有标签数据';
+    return;
+  }
+  tags.forEach(tag=>{
+    const idT='expT_'+tag.replace(/\s+/g,'_');
+    const idD='expD_'+tag.replace(/\s+/g,'_');
+    const w1=document.createElement('div');
+    w1.style.marginBottom='4px';
+    w1.innerHTML=`<label><input type="checkbox" id="${idT}" data-tag="${tag}"> <span class="mono">${tag}</span></label>`;
+    expTagsTracking.appendChild(w1);
+    const w2=document.createElement('div');
+    w2.style.marginBottom='4px';
+    w2.innerHTML=`<label><input type="checkbox" id="${idD}" data-tag="${tag}"> <span class="mono">${tag}</span></label>`;
+    expTagsDevice.appendChild(w2);
+  });
+}
+$('#btnExportDay').onclick=()=>openExportModal();
+exportClose.onclick=()=>closeExportModal();
+exportBackdrop.onclick=()=>closeExportModal();
+
+$('#btnExportTrackingDay').onclick=()=>{
+  const date=expDate.value;
+  if(!date){ alert('请先选择日期'); return; }
+  const checked=[...expTagsTracking.querySelectorAll('input[type="checkbox"]:checked')].map(i=>i.dataset.tag);
+  const rows=[['tag','tracking','type','note','created_at','created_date']];
+  DB.tracking.forEach(r=>{
+    if(r.created_date!==date) return;
+    if(checked.length && !checked.includes(r.tag||'')) return;
+    rows.push([r.tag||'',r.tracking||'',r.type||'',r.note||'',r.created_at||'',r.created_date||'']);
+  });
+  downloadCSV('tracking_'+date,rows);
+};
+$('#btnExportDeviceDay').onclick=()=>{
+  const date=expDate.value;
+  if(!date){ alert('请先选择日期'); return; }
+  const checked=[...expTagsDevice.querySelectorAll('input[type="checkbox"]:checked')].map(i=>i.dataset.tag);
+  const rows=[['tag','serial','upc','device','capacity','color','status','created_at','created_date']];
+  DB.device.forEach(r=>{
+    if(r.created_date!==date) return;
+    if(checked.length && !checked.includes(r.tag||'')) return;
+    rows.push([r.tag||'',r.serial||'',r.upc||'',r.device||'',r.capacity||'',r.color||'',r.status||'',r.created_at||'',r.created_date||'']);
+  });
+  downloadCSV('device_'+date,rows);
+};
+
+/* ========== 初始化 ========= */
+refreshTagDatalist();
+renderTracking();
+renderDevice();
+renderSummary();
+renderSKU();
+renderTags();
+loadSettingsUI();
+
+// 汇总默认日期设为今天（你也可以手动改为空查看所有天）
+const sumDateInput=$('#sumDate');
+if(sumDateInput){
+  sumDateInput.value=new Date().toISOString().slice(0,10);
+}
+</script>
 </body>
 </html>
