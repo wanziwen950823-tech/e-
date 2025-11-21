@@ -44,7 +44,8 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 .stat{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px 14px;border-top:1px dashed #23334d;background:linear-gradient(180deg,#0b111c,#0a0f18)}
 .card{background:linear-gradient(180deg,#0d1320,#0b111a);border:1px solid #1e2940;border-radius:12px;padding:10px}
 .card .v{font-size:18px;font-weight:700}
-.hidden{display:none}
+/* 这里加上 !important 修复弹窗无法关闭的问题 */
+.hidden{display:none !important;}
 .exp{background:#0d1526;border-left:3px solid #2e4a7a}
 .warn{animation:flash 0.6s linear 2}
 .err{animation:flashR 0.6s linear 2}
@@ -505,7 +506,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 
 <datalist id="tagList"></datalist>
 
-<!-- 新导出弹窗：注意这里已经加好点击关闭逻辑 -->
+<!-- 新导出弹窗 -->
 <div id="exportOverlay"
      class="export-overlay hidden"
      onclick="if(event.target===this) closeExportByTag();">
@@ -1311,7 +1312,7 @@ if(sumDateInput){
 }
 renderSummary();
 
-// 绑定导出相关事件（做 null 判断，防止报错）
+// 绑定导出相关事件
 (function bindExportEvents(){
   const b1=$('#btnExportByTag');        if(b1) b1.onclick=openExportByTag;
   const b2=$('#btnExportCancel');      if(b2) b2.onclick=closeExportByTag;
@@ -1320,6 +1321,7 @@ renderSummary();
   const b5=$('#btnExportDeviceCSV');   if(b5) b5.onclick=exportDeviceByTag;
 })();
 
+// Esc 关闭弹窗
 document.addEventListener('keydown',e=>{
   const ov=$('#exportOverlay');
   if(e.key==='Escape' && ov && !ov.classList.contains('hidden')){
