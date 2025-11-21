@@ -53,24 +53,11 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 .footer{margin-top:10px;color:#8b9ab3;text-align:center;font-size:12px}
 .k{color:#7aa2f7}
 
-/* 导出弹窗（老 modal 样式保留但不再使用） */
-.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:50}
-.modal.show{display:flex}
-.modal-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.75)}
-.modal-content{position:relative;z-index:60;width:600px;max-width:95%;background:#050816;border-radius:14px;border:1px solid #1e2a3f;box-shadow:0 20px 40px rgba(0,0,0,.6);padding:16px 18px 18px}
-.modal-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.modal-title h3{margin:0;font-size:14px}
-.modal-close{cursor:pointer;border:none;background:none;color:#9ca3af;font-size:18px}
-.modal-body{display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:12px;color:#cbd5f5}
-.modal-body h4{margin:0 0 6px;font-size:12px;color:#e5e7eb}
-.modal-body .box{border-radius:10px;border:1px solid #1f2937;background:#020617;padding:8px}
-.modal-footer{margin-top:10px;font-size:11px;color:#9ca3af}
-
 /* 标签管理表 */
 .tag-table thead th{font-size:12px}
 .tag-table tbody td{font-size:13px}
 
-/* ======== v3.6：固定窗口列表 ======== */
+/* 固定窗口列表 */
 .list-window,
 .tracking-window{
   border-radius:12px;
@@ -121,81 +108,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
   font-size:13px;
 }
 
-/* ======== v3.6 汇总旧样式（部分仍复用） ======== */
-.summary-filters{
-  margin:10px 14px 6px;
-  padding:8px 10px;
-  border-radius:10px;
-  border:1px solid #1e293b;
-  background:#020617;
-}
-.filter-row{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  align-items:center;
-  font-size:12px;
-  color:#cbd5f5;
-}
-.filter-group{
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-.filter-group input,
-.filter-group select{
-  height:28px;
-  border-radius:6px;
-  border:1px solid #273549;
-  background:#020617;
-  color:#e5e7eb;
-  padding:0 6px;
-  font-size:12px;
-}
-.filter-actions{
-  margin-left:auto;
-  flex-wrap:wrap;
-  display:flex;
-  gap:6px;
-}
-.btn-sm2{
-  border-radius:999px;
-  border:1px solid #273549;
-  background:#020617;
-  color:#cbd5f5;
-  font-size:11px;
-  padding:4px 8px;
-  cursor:pointer;
-  white-space:nowrap;
-}
-.btn-sm2:hover{border-color:#3b82f6}
-
-.sum-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:18px;
-  margin:8px 14px 18px;
-}
-.sum-box-head{
-  padding:8px 12px;
-  border-radius:10px 10px 0 0;
-  border:1px solid #1e293b;
-  border-bottom:none;
-  background:linear-gradient(180deg,#0f172a,#020617);
-  font-size:13px;
-  color:#cbd5f5;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.sum-badge{
-  font-size:11px;
-  color:#9ca3af;
-  border-radius:999px;
-  border:1px solid #273549;
-  padding:2px 6px;
-  background:#020617;
-}
+/* 原 v3.6 汇总容器基础样式复用 */
 .sum-window{
   border-radius:0 0 12px 12px;
   border:1px solid #1e293b;
@@ -220,18 +133,8 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 .sum-row{
   background:linear-gradient(180deg,#020617,#020617);
 }
-.sum-model-title{
-  font-size:13px;
-  color:#9ca3af;
-  margin:0 14px 6px;
-}
-.footer hr{border:none;border-top:1px solid #1e293b;margin:20px 0 10px}
 
-/* ======== v3.7 新汇总：按标签 + 新导出弹窗 ======== */
-
-/* 新汇总顶部卡片可以继续复用 .stat / .card / .k / .v */
-
-/* 新导出 overlay */
+/* ===== v3.7 新导出弹窗 ===== */
 .export-overlay{
   position:fixed;
   inset:0;
@@ -385,7 +288,6 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
       <div class="card"><div class="k">标签种类</div><div class="v" id="tTags">0</div></div>
     </div>
 
-    <!-- 固定窗口列表 -->
     <div class="tracking-window">
       <table style="width:100%;border-collapse:collapse;border-spacing:0;">
         <thead>
@@ -436,7 +338,6 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
       <div class="card"><div class="k">最近登记</div><div class="v" id="dLast">-</div></div>
     </div>
 
-    <!-- 固定窗口设备列表 -->
     <div class="tracking-window">
       <table style="width:100%;border-collapse:collapse;border-spacing:0;">
         <thead>
@@ -461,7 +362,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
     </div>
   </section>
 
-  <!-- 汇总（v3.7 新版） -->
+  <!-- 汇总 / 明细 v3.7 -->
   <section id="panel-summary" class="panel hidden">
     <div class="head">
       <h2>汇总 / 明细（按日期 · 按标签）</h2>
@@ -472,7 +373,6 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
       </div>
     </div>
 
-    <!-- 顶部统计卡片：当日运单 / 设备 / 标签数 -->
     <div class="stat">
       <div class="card">
         <div class="k">当日运单数量</div>
@@ -492,7 +392,6 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
       </div>
     </div>
 
-    <!-- 按标签汇总表 -->
     <div class="sum-window" style="margin:10px 14px 14px;">
       <table style="width:100%;border-collapse:collapse;border-spacing:0;">
         <thead>
@@ -556,7 +455,6 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
       </div>
     </div>
 
-    <!-- 标签列表固定窗口 -->
     <div class="tracking-window">
       <table style="width:100%;border-collapse:collapse;border-spacing:0;" class="tag-table">
         <thead>
@@ -605,16 +503,18 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
   <div class="footer">© 天道扫码 v3.7 · 本地运行</div>
 </div>
 
-<!-- 标签 datalist（运单 + 设备 共用） -->
 <datalist id="tagList"></datalist>
 
-<!-- 新导出弹窗：按日期 + 标签导出（v3.7） -->
-<div id="exportOverlay" class="export-overlay hidden">
+<!-- 新导出弹窗：注意这里已经加好点击关闭逻辑 -->
+<div id="exportOverlay"
+     class="export-overlay hidden"
+     onclick="if(event.target===this) closeExportByTag();">
   <div class="export-modal">
     <div class="export-header">
       <div class="export-title">按标签导出 CSV</div>
       <div class="export-date">日期：<span id="exportDateText"></span></div>
-      <button class="export-close" id="exportCloseBtn">×</button>
+      <button class="export-close" id="exportCloseBtn"
+              onclick="closeExportByTag();">×</button>
     </div>
     <div class="export-body">
       <div class="export-column">
@@ -632,7 +532,8 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
         设备标签 <span id="countDevice">0</span> 个
       </div>
       <div class="export-footer-buttons">
-        <button class="btn sm" id="btnExportCancel">取消</button>
+        <button class="btn sm" id="btnExportCancel"
+                onclick="closeExportByTag();">取消</button>
         <button class="btn sm acc" id="btnExportWaybillCSV">导出运单 CSV</button>
         <button class="btn sm acc" id="btnExportDeviceCSV">导出设备 CSV</button>
       </div>
@@ -641,18 +542,18 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 </div>
 
 <script>
-/* ========== 存储 ========= */
-const storeKey='TIANDAO_SCAN_V34'; // 保持不变，兼容旧数据
+/* ===== 数据存储 ===== */
+const storeKey='TIANDAO_SCAN_V34';
 const DB=loadDB();
 function loadDB(){
   try{
     const d=JSON.parse(localStorage.getItem(storeKey)||'{}');
     return Object.assign({
       settings:{fedTail:true,voice:true,beep:true,blockDupSN:true,autoScan:true,confirmDel:true},
-      tags:[],        // 标签列表
-      tracking:[],    // {id,tag,tracking,type,note,created_at,created_date}
-      device:[],      // {id,tag,serial,upc,device,capacity,color,status,created_at,created_date}
-      sku:{}          // upc -> {device,capacity,color}
+      tags:[],
+      tracking:[],
+      device:[],
+      sku:{}
     },d);
   }catch(e){
     return {
@@ -666,7 +567,7 @@ function loadDB(){
 }
 function save(){ localStorage.setItem(storeKey,JSON.stringify(DB)); }
 
-/* ========== 小工具 ========= */
+/* ===== 工具函数 ===== */
 const $=s=>document.querySelector(s);
 const el=(t,a={},h='')=>{const n=document.createElement(t);for(const k in a){k==='class'?n.className=a[k]:n.setAttribute(k,a[k])}if(h)n.innerHTML=h;return n;}
 function nowPair(){
@@ -686,7 +587,7 @@ function beep(kind='ok'){
   o.start(); setTimeout(()=>{o.stop();ctx.close()},160);
 }
 
-/* ========== 语音（女声英文） ========= */
+/* ===== 语音 ===== */
 const VOICE_URLS={
   trackingErr:'voice_tracking_error_en_female.mp3',
   serialErr:'voice_serial_error_en_female.mp3',
@@ -714,7 +615,7 @@ function flash(node, cls){
   node.classList.add(cls); setTimeout(()=>node.classList.remove(cls),700);
 }
 
-/* ========== Tab 切换 ========= */
+/* ===== Tab 切换 ===== */
 document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click',()=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
@@ -729,7 +630,7 @@ document.querySelectorAll('.tab').forEach(t=>{
   });
 });
 
-/* ========== FedEx / UPS 运单识别 ========= */
+/* ===== FedEx / UPS 识别 ===== */
 function normalizeTracking(raw, forceType){
   let s=(raw||'').toUpperCase().trim().replace(/\s+/g,'');
   let type='Unknown';
@@ -750,7 +651,7 @@ function validTracking(tracking,type){
   return false;
 }
 
-/* ========== 标签工具 ========= */
+/* ===== 标签工具 ===== */
 function ensureTagExists(tag){
   const t=(tag||'').trim();
   if(!t) return;
@@ -776,7 +677,7 @@ function refreshTagDatalist(){
   });
 }
 
-/* ========== 运单模块 ========= */
+/* ===== 运单模块 ===== */
 const tTag=$('#t_tag'), tInput=$('#t_input'), tType=$('#t_type'), tNote=$('#t_note');
 $('#tFocus').onclick=()=>tInput.focus();
 $('#tAdd').onclick=()=>addTracking(tInput.value);
@@ -796,7 +697,6 @@ tInput.addEventListener('input',()=>{
 tInput.addEventListener('keydown',e=>{
   if(e.key==='Enter') addTracking(tInput.value);
 });
-
 function addTracking(raw, fromAuto=false){
   raw=(raw||'').trim();
   if(!raw) return;
@@ -864,10 +764,9 @@ function renderTracking(){
   });
 }
 
-/* ========== 设备模块 ========= */
+/* ===== 设备模块 ===== */
 const dTag=$('#d_tag'), dSerial=$('#d_serial'), dUPC=$('#d_upc'),
       dDev=$('#d_device'), dCap=$('#d_capacity'), dCol=$('#d_color');
-
 $('#dClear').onclick=()=>{
   if(!DB.settings.confirmDel || confirm('确定清空全部设备？')){
     DB.device=[]; save(); renderDevice(); renderSummary(); renderTags();
@@ -875,11 +774,9 @@ $('#dClear').onclick=()=>{
 };
 $('#dExport').onclick=()=>exportCSVAll('device');
 $('#dImport').addEventListener('change',e=>importCSV(e,'device'));
-
 dSerial.addEventListener('keydown',e=>{
   if(e.key==='Enter'){ dUPC.focus(); }
 });
-
 let upcDeb;
 dUPC.addEventListener('input',()=>{
   const upc=dUPC.value.trim();
@@ -894,7 +791,6 @@ dUPC.addEventListener('input',()=>{
 dUPC.addEventListener('keydown',e=>{
   if(e.key==='Enter'){ addDevice(false); }
 });
-
 function isValidSerial(sn){
   return /^[0-9A-Z]{11}$/.test(sn);
 }
@@ -933,7 +829,6 @@ function addDevice(fromAuto){
     flash(dUPC,'warn');
     beep('warn');
   }
-
   const {created_at,created_date}=nowPair();
   DB.device.push({
     id:Date.now()+Math.random(),
@@ -963,7 +858,6 @@ function renderDevice(){
   $('#dUnique').textContent=uniq.size;
   $('#dTags').textContent=new Set(DB.device.map(x=>x.tag||'')).size;
   $('#dLast').textContent=DB.device.length? DB.device[DB.device.length-1].created_at : '-';
-
   DB.device.slice().reverse().forEach(r=>{
     const tr=el('tr',{class:'tracking-row'});
     tr.appendChild(el('td',{},`<span class="chip mono">${r.tag||'-'}</span>`));
@@ -992,22 +886,18 @@ function renderDevice(){
   });
 }
 
-/* ========== 汇总 / 明细（v3.7 新版：按日期 + 按标签） ========= */
-
+/* ===== 汇总 / 明细 v3.7 ===== */
 function getSummaryDate(){
   const input=$('#sumDate');
   return input && input.value ? input.value : '';
 }
-
 function renderSummary(){
   const date=getSummaryDate();
   const dayT=DB.tracking.filter(r=>!date || r.created_date===date);
   const dayD=DB.device.filter(r=>!date || r.created_date===date);
-
   $('#sumWaybillCount').textContent=dayT.length;
   $('#sumDeviceCount').textContent=dayD.length;
-
-  const map=new Map(); // tag -> {t,d}
+  const map=new Map();
   function addTag(tag,kind){
     const key=(tag && tag.trim()) || '(未填标签)';
     if(!map.has(key)) map.set(key,{t:0,d:0});
@@ -1016,12 +906,10 @@ function renderSummary(){
   }
   dayT.forEach(r=>addTag(r.tag,'t'));
   dayD.forEach(r=>addTag(r.tag,'d'));
-
   const tbody=$('#summaryByTagBody');
   tbody.innerHTML='';
   const tags=[...map.keys()].sort((a,b)=>a.localeCompare(b,'zh-CN'));
   $('#sumTagCount').textContent=tags.length;
-
   if(tags.length===0){
     const tr=document.createElement('tr');
     const td=document.createElement('td');
@@ -1033,7 +921,6 @@ function renderSummary(){
     tbody.appendChild(tr);
     return;
   }
-
   tags.forEach(tag=>{
     const rec=map.get(tag);
     const tr=document.createElement('tr');
@@ -1046,8 +933,7 @@ function renderSummary(){
   });
 }
 
-/* ===== 按标签导出弹窗（基于 DB.tracking / DB.device） ===== */
-
+/* 导出弹窗：按标签导出 */
 function openExportByTag(){
   const date=getSummaryDate();
   if(!date){
@@ -1060,21 +946,17 @@ function openExportByTag(){
 function closeExportByTag(){
   $('#exportOverlay').classList.add('hidden');
 }
-
 function buildExportTagLists(date){
   const wWrap=$('#waybillTagList');
   const dWrap=$('#deviceTagList');
   wWrap.innerHTML='';
   dWrap.innerHTML='';
-
   const dayT=DB.tracking.filter(r=>r.created_date===date);
   const dayD=DB.device.filter(r=>r.created_date===date);
-
   const tTags=[...new Set(dayT.map(r=>(r.tag||'').trim()).filter(Boolean))]
     .sort((a,b)=>a.localeCompare(b,'zh-CN'));
   const dTags=[...new Set(dayD.map(r=>(r.tag||'').trim()).filter(Boolean))]
     .sort((a,b)=>a.localeCompare(b,'zh-CN'));
-
   if(!tTags.length){
     const div=document.createElement('div');
     div.className='export-empty';
@@ -1083,7 +965,6 @@ function buildExportTagLists(date){
   }else{
     tTags.forEach(tag=>wWrap.appendChild(createExportTagItem(tag,'tracking')));
   }
-
   if(!dTags.length){
     const div=document.createElement('div');
     div.className='export-empty';
@@ -1092,10 +973,8 @@ function buildExportTagLists(date){
   }else{
     dTags.forEach(tag=>dWrap.appendChild(createExportTagItem(tag,'device')));
   }
-
   updateExportSelectedCount();
 }
-
 function createExportTagItem(tag,type){
   const label=document.createElement('label');
   label.className='export-tag-item';
@@ -1110,7 +989,6 @@ function createExportTagItem(tag,type){
   label.appendChild(span);
   return label;
 }
-
 function updateExportSelectedCount(){
   const all=document.querySelectorAll('.export-tag-item input[type="checkbox"]');
   let ct=0, cd=0;
@@ -1127,7 +1005,6 @@ function getSelectedExportTags(type){
   return [...document.querySelectorAll(`.export-tag-item input[data-type="${type}"]:checked`)]
     .map(i=>i.dataset.label);
 }
-
 function exportTrackingByTag(){
   const date=getSummaryDate();
   if(!date){ alert('请先选择日期'); return; }
@@ -1163,7 +1040,6 @@ function exportDeviceByTag(){
   if(!data.length){
     alert('当前日期下所选标签没有设备数据'); return;
   }
-  // 这里暂时用 UPC 列，不做 SKU / 绑定运单号
   const rows=[['日期','序列号','UPC','Device','颜色','容量','标签','状态']];
   data.forEach(r=>{
     rows.push([
@@ -1180,10 +1056,9 @@ function exportDeviceByTag(){
   downloadCSV('device_'+date,rows);
 }
 
-/* ========== SKU 录入 ========= */
+/* ===== SKU 模块 ===== */
 const skuUpc=$('#sku_upc'), skuDev=$('#sku_device'),
       skuCap=$('#sku_capacity'), skuCol=$('#sku_color');
-
 $('#skuAdd').onclick=()=>{
   const upc=(skuUpc.value||'').trim();
   if(!upc) return;
@@ -1256,7 +1131,7 @@ function renderSKU(){
   });
 }
 
-/* ========== 标签管理 ========= */
+/* ===== 标签管理 ===== */
 $('#tagAdd').onclick=()=>{
   const t=($('#tagNew').value||'').trim();
   if(!t) return;
@@ -1267,7 +1142,6 @@ $('#tagAdd').onclick=()=>{
   renderTags();
 };
 $('#tagRefresh').onclick=()=>{ renderTags(); };
-
 function renderTags(){
   const body=$('#tagBody'); body.innerHTML='';
   const tags=allTagsFromData();
@@ -1312,7 +1186,7 @@ function renderTags(){
   });
 }
 
-/* ========== 导入导出通用 ========= */
+/* ===== 导入导出通用 ===== */
 function toCSV(arr){
   return arr.map(r=>r.map(c=>{
     const s=(c==null?'':String(c));
@@ -1336,7 +1210,6 @@ function exportCSVAll(kind){
     downloadCSV('tracking_all',rows);
   }else{
     const rows=[['tag','serial','upc','device','capacity','color','status','created_at','created_date']];
-//    downloadCSV('device_all',rows);
     DB.device.forEach(r=>{
       rows.push([r.tag||'',r.serial||'',r.upc||'',r.device||'',r.capacity||'',r.color||'',r.status||'',r.created_at||'',r.created_date||'']);
     });
@@ -1395,14 +1268,13 @@ function importCSV(evt,kind){
   r.readAsText(f,'utf-8');
 }
 
-/* ========== 设置 ========= */
+/* ===== 设置 ===== */
 const setFedTail=$('#setFedTail'),
       setVoice=$('#setVoice'),
       setBeep=$('#setBeep'),
       setBlockDupSN=$('#setBlockDupSN'),
       setAutoScan=$('#setAutoScan'),
       setConfirm=$('#setConfirmDel');
-
 function loadSettingsUI(){
   setFedTail.checked=!!DB.settings.fedTail;
   setVoice.checked=!!DB.settings.voice;
@@ -1423,7 +1295,7 @@ function loadSettingsUI(){
   });
 });
 
-/* ========== 初始化 ========= */
+/* ===== 初始化 ===== */
 refreshTagDatalist();
 renderTracking();
 renderDevice();
@@ -1431,7 +1303,7 @@ renderSKU();
 renderTags();
 loadSettingsUI();
 
-// 汇总：默认日期设为今天，并渲染
+// 汇总日期默认今天
 const sumDateInput=$('#sumDate');
 if(sumDateInput){
   sumDateInput.value=new Date().toISOString().slice(0,10);
@@ -1439,12 +1311,15 @@ if(sumDateInput){
 }
 renderSummary();
 
-// 新导出弹窗事件绑定
-$('#btnExportByTag').onclick=openExportByTag;
-$('#btnExportCancel').onclick=closeExportByTag;
-$('#exportCloseBtn').onclick=closeExportByTag;
-$('#btnExportWaybillCSV').onclick=exportTrackingByTag;
-$('#btnExportDeviceCSV').onclick=exportDeviceByTag;
+// 绑定导出相关事件（做 null 判断，防止报错）
+(function bindExportEvents(){
+  const b1=$('#btnExportByTag');        if(b1) b1.onclick=openExportByTag;
+  const b2=$('#btnExportCancel');      if(b2) b2.onclick=closeExportByTag;
+  const b3=$('#exportCloseBtn');       if(b3) b3.onclick=closeExportByTag;
+  const b4=$('#btnExportWaybillCSV');  if(b4) b4.onclick=exportTrackingByTag;
+  const b5=$('#btnExportDeviceCSV');   if(b5) b5.onclick=exportDeviceByTag;
+})();
+
 document.addEventListener('keydown',e=>{
   const ov=$('#exportOverlay');
   if(e.key==='Escape' && ov && !ov.classList.contains('hidden')){
