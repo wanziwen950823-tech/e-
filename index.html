@@ -44,7 +44,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 .stat{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px 14px;border-top:1px dashed #23334d;background:linear-gradient(180deg,#0b111c,#0a0f18)}
 .card{background:linear-gradient(180deg,#0d1320,#0b111a);border:1px solid #1e2940;border-radius:12px;padding:10px}
 .card .v{font-size:18px;font-weight:700}
-/* 这里加上 !important 修复弹窗无法关闭的问题 */
+/* 关键修复：hidden 强制隐藏覆盖 flex */
 .hidden{display:none !important;}
 .exp{background:#0d1526;border-left:3px solid #2e4a7a}
 .warn{animation:flash 0.6s linear 2}
@@ -262,7 +262,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
   <!-- 运单 -->
   <section id="panel-tracking" class="panel">
     <div class="head">
-      <h2>运单登记（UPS / FedEx 自动识别；FedEx 保存尾 12 位；错误+重复人声提示）</h2>
+      <h2>运单登记（UPS / FedEx 自动识别；FedEx 保存尾 12 位；错误+重复语音提示）</h2>
       <div class="flex">
         <button class="btn sm" id="tExport">导出全部运单 CSV</button>
         <label class="btn sm acc" for="tImport">导入CSV</label>
@@ -329,7 +329,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
       <input id="d_capacity" placeholder="Capacity（SKU 自动填）"/>
       <input id="d_color" placeholder="Color（SKU 自动填）"/>
       <div class="full" style="display:flex;gap:8px;align-items:center;color:#9fb0c7;padding-top:0">
-        <span>提示：SN 非 11 位或包含非法字符 → 红闪 + 英文女声“Serial number error”，停止保存；SN 重复可选阻止；UPC 重复仅警告不阻止。</span>
+        <span>提示：SN 非 11 位或包含非法字符 → 红闪 + 语音“序列号错误”，停止保存；SN 重复可选阻止；UPC 重复仅警告不阻止。</span>
       </div>
     </div>
     <div class="stat">
@@ -483,7 +483,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
         <input type="checkbox" id="setFedTail"> FedEx 运单只保留后 12 位
       </label>
       <label class="full" style="display:flex;gap:10px;align-items:center">
-        <input type="checkbox" id="setVoice"> 启用英文女声提示（错误时播报）
+        <input type="checkbox" id="setVoice"> 启用中文语音提示（错误时播报）
       </label>
       <label class="full" style="display:flex;gap:10px;align-items:center">
         <input type="checkbox" id="setBeep"> 启用提示音（成功/警告）
@@ -588,29 +588,37 @@ function beep(kind='ok'){
   o.start(); setTimeout(()=>{o.stop();ctx.close()},160);
 }
 
-/* ===== 语音 ===== */
-const VOICE_URLS={
-  trackingErr:'voice_tracking_error_en_female.mp3',
-  serialErr:'voice_serial_error_en_female.mp3',
-  dupSerial:'voice_duplicate_serial_en_female.mp3',
-  dupTracking:'voice_duplicate_tracking_en_female.mp3'
-};
-function speakTextEn(text){
+/* ===== 中文语音播报 ===== */
+function speakTextZh(text){
   if(!('speechSynthesis' in window)) return;
   const u=new SpeechSynthesisUtterance(text);
-  u.lang='en-US';
+  u.lang='zh-CN';
   window.speechSynthesis.speak(u);
 }
+
 function playVoice(kind, fallbackText){
   if(!DB.settings.voice) return;
-  const url=VOICE_URLS[kind];
-  if(url){
-    const audio=new Audio(url);
-    audio.play().catch(()=>{ if(fallbackText) speakTextEn(fallbackText); });
-  }else if(fallbackText){
-    speakTextEn(fallbackText);
+  let text='';
+  switch(kind){
+    case 'trackingErr':
+      text='运单号错误';
+      break;
+    case 'dupTracking':
+      text='运单号重复，未保存';
+      break;
+    case 'serialErr':
+      text='序列号错误';
+      break;
+    case 'dupSerial':
+      text='序列号重复';
+      break;
+    default:
+      text='';
   }
+  if(text) speakTextZh(text);
 }
+
+/* 高亮闪烁 */
 function flash(node, cls){
   node.classList.remove('warn','err'); void node.offsetWidth;
   node.classList.add(cls); setTimeout(()=>node.classList.remove(cls),700);
@@ -705,14 +713,14 @@ function addTracking(raw, fromAuto=false){
   if(!tracking || !validTracking(tracking,type)){
     flash(tInput,'err');
     beep('bad');
-    playVoice('trackingErr','Tracking number error');
+    playVoice('trackingErr','');
     return;
   }
   const dup=DB.tracking.some(x=>x.tracking===tracking);
   if(dup){
     flash(tInput,'err');
     beep('bad');
-    playVoice('dupTracking','Duplicate tracking, not saved');
+    playVoice('dupTracking','');
     return;
   }
   const tag=tTag.value.trim();
@@ -805,7 +813,7 @@ function addDevice(fromAuto){
   if(serial && !isValidSerial(serial)){
     flash(dSerial,'err');
     beep('bad');
-    playVoice('serialErr','Serial number error');
+    playVoice('serialErr','');
     return;
   }
   if(serial){
@@ -813,7 +821,7 @@ function addDevice(fromAuto){
     if(dup){
       flash(dSerial,'err');
       beep('bad');
-      playVoice('dupSerial','Serial number duplicated');
+      playVoice('dupSerial','');
       if(DB.settings.blockDupSN) return;
     }
   }
