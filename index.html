@@ -44,7 +44,10 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 .stat{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px 14px;border-top:1px dashed #23334d;background:linear-gradient(180deg,#0b111c,#0a0f18)}
 .card{background:linear-gradient(180deg,#0d1320,#0b111a);border:1px solid #1e2940;border-radius:12px;padding:10px}
 .card .v{font-size:18px;font-weight:700}
-.hidden{display:none}
+
+/* 这里加 !important，保证任何地方都能真正隐藏 */
+.hidden{display:none !important;}
+
 .exp{background:#0d1526;border-left:3px solid #2e4a7a}
 .warn{animation:flash 0.6s linear 2}
 .err{animation:flashR 0.6s linear 2}
@@ -165,6 +168,11 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
   justify-content:center;
   z-index:60;
 }
+/* 再加一条，更保险 */
+.export-overlay.hidden{
+  display:none !important;
+}
+
 .export-modal{
   width:720px;
   max-width:96%;
@@ -534,13 +542,15 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 
 <datalist id="tagList"></datalist>
 
-<!-- 新导出弹窗：统一用 JS 绑定关闭逻辑 -->
-<div id="exportOverlay" class="export-overlay hidden">
+<!-- 新导出弹窗 -->
+<div id="exportOverlay"
+     class="export-overlay hidden"
+     onclick="if(event.target===this) closeExportByTag();">
   <div class="export-modal">
     <div class="export-header">
       <div class="export-title">按标签导出 CSV</div>
       <div class="export-date">时间范围：<span id="exportDateText"></span></div>
-      <button class="export-close" id="exportCloseBtn">×</button>
+      <button class="export-close" id="exportCloseBtn" onclick="closeExportByTag();">×</button>
     </div>
     <div class="export-body">
       <div class="export-column">
@@ -558,7 +568,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
         设备标签 <span id="countDevice">0</span> 个
       </div>
       <div class="export-footer-buttons">
-        <button class="btn sm" id="btnExportCancel">取消</button>
+        <button class="btn sm" id="btnExportCancel" onclick="closeExportByTag();">取消</button>
         <button class="btn sm acc" id="btnExportWaybillCSV">导出运单 CSV</button>
         <button class="btn sm acc" id="btnExportDeviceCSV">导出设备 CSV</button>
       </div>
@@ -594,15 +604,7 @@ function save(){ localStorage.setItem(storeKey,JSON.stringify(DB)); }
 
 /* ===== 工具函数 ===== */
 const $=s=>document.querySelector(s);
-const el=(t,a={},h='')=>{
-  const n=document.createElement(t);
-  for(const k in a){
-    if(k==='class') n.className=a[k];
-    else n.setAttribute(k,a[k]);
-  }
-  if(h) n.innerHTML=h;
-  return n;
-};
+const el=(t,a={},h='')=>{const n=document.createElement(t);for(const k in a){k==='class'?n.className=a[k]:n.setAttribute(k,a[k])}if(h)n.innerHTML=h;return n;}
 function nowPair(){
   const dt=new Date();
   return {
@@ -993,7 +995,7 @@ function buildRangeText(range){
   return '全部时间';
 }
 
-/* ===== 汇总 / 明细：按时间范围 + 标签 ===== */
+/* ===== 汇总 / 明细 ===== */
 function renderSummary(){
   const range=getSummaryRange();
   const filteredT=DB.tracking.filter(r=>passRangeFilter(r,range));
@@ -1024,8 +1026,7 @@ function renderSummary(){
     td.colSpan=3;
     td.style.fontSize='12px';
     td.style.color='#9ca3af';
-    const r=getSummaryRange();
-    td.textContent=(r.fromStr || r.toStr)?'当前时间范围暂无数据':'暂无数据';
+    td.textContent=(range.fromTs || range.toTs)?'当前时间范围暂无数据':'暂无数据';
     tr.appendChild(td);
     tbody.appendChild(tr);
     return;
@@ -1047,20 +1048,13 @@ $('#sumApply').onclick=()=>renderSummary();
 /* ===== 导出弹窗：按标签 + 时间范围 ===== */
 function openExportByTag(){
   const range=getSummaryRange();
-  const dateText=document.getElementById('exportDateText');
-  if(dateText) dateText.textContent=buildRangeText(range);
+  $('#exportDateText').textContent=buildRangeText(range);
   buildExportTagLists(range);
-
-  const ov=document.getElementById('exportOverlay');
-  if(ov) ov.classList.remove('hidden');
+  $('#exportOverlay').classList.remove('hidden');
 }
 function closeExportByTag(){
-  const ov=document.getElementById('exportOverlay');
-  if(ov) ov.classList.add('hidden');
+  $('#exportOverlay').classList.add('hidden');
 }
-window.openExportByTag=openExportByTag;
-window.closeExportByTag=closeExportByTag;
-
 function buildExportTagLists(range){
   const wWrap=$('#waybillTagList');
   const dWrap=$('#deviceTagList');
@@ -1221,7 +1215,7 @@ $('#skuPasteBtn').onclick=()=>{
   save(); renderSKU(); beep('ok');
 };
 $('#skuExport').onclick=()=>{
-  const rows=[['upc','device','capacity','color']]:
+  const rows=[['upc','device','capacity','color']];
   Object.entries(DB.sku).forEach(([u,v])=>{
     rows.push([u,v.device||'',v.capacity||'',v.color||'']);
   });
@@ -1439,39 +1433,14 @@ loadSettingsUI();
 })();
 renderSummary();
 
-// 绑定导出弹窗相关按钮
-const btnExportByTag=$('#btnExportByTag');
-if(btnExportByTag) btnExportByTag.addEventListener('click',openExportByTag);
-
-const btnExportWaybill=$('#btnExportWaybillCSV');
-if(btnExportWaybill) btnExportWaybill.addEventListener('click',exportTrackingByTag);
-
-const btnExportDevice=$('#btnExportDeviceCSV');
-if(btnExportDevice) btnExportDevice.addEventListener('click',exportDeviceByTag);
-
-const btnExportCancel=$('#btnExportCancel');
-if(btnExportCancel) btnExportCancel.addEventListener('click',e=>{
-  e.preventDefault();
-  closeExportByTag();
-});
-
-const btnExportClose=$('#exportCloseBtn');
-if(btnExportClose) btnExportClose.addEventListener('click',e=>{
-  e.preventDefault();
-  closeExportByTag();
-});
-
-// 点击遮罩空白区域关闭
-const exportOverlay=document.getElementById('exportOverlay');
-if(exportOverlay){
-  exportOverlay.addEventListener('click',e=>{
-    if(e.target===exportOverlay) closeExportByTag();
-  });
-}
+// 绑定导出按钮
+const b1=$('#btnExportByTag');       if(b1) b1.onclick=openExportByTag;
+const b4=$('#btnExportWaybillCSV');  if(b4) b4.onclick=exportTrackingByTag;
+const b5=$('#btnExportDeviceCSV');   if(b5) b5.onclick=exportDeviceByTag;
 
 // ESC 关闭导出弹窗
 document.addEventListener('keydown',e=>{
-  const ov=document.getElementById('exportOverlay');
+  const ov=$('#exportOverlay');
   if(e.key==='Escape' && ov && !ov.classList.contains('hidden')){
     closeExportByTag();
   }
