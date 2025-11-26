@@ -44,8 +44,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 .stat{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px 14px;border-top:1px dashed #23334d;background:linear-gradient(180deg,#0b111c,#0a0f18)}
 .card{background:linear-gradient(180deg,#0d1320,#0b111a);border:1px solid #1e2940;border-radius:12px;padding:10px}
 .card .v{font-size:18px;font-weight:700}
-/* 关键修复：hidden 强制隐藏覆盖 flex */
-.hidden{display:none !important;}
+.hidden{display:none}
 .exp{background:#0d1526;border-left:3px solid #2e4a7a}
 .warn{animation:flash 0.6s linear 2}
 .err{animation:flashR 0.6s linear 2}
@@ -109,7 +108,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
   font-size:13px;
 }
 
-/* 原 v3.6 汇总容器基础样式复用 */
+/* 汇总窗口基础样式 */
 .sum-window{
   border-radius:0 0 12px 12px;
   border:1px solid #1e293b;
@@ -133,6 +132,27 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 }
 .sum-row{
   background:linear-gradient(180deg,#020617,#020617);
+}
+
+/* 汇总时间筛选（dd/MM/yyyy HH:mm） */
+.summary-time-row{
+  padding:10px 14px 4px;
+  font-size:12px;
+  color:#cbd5f5;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+}
+.summary-time-row input{
+  height:28px;
+  border-radius:8px;
+  border:1px solid #273549;
+  background:#020617;
+  color:#e5e7eb;
+  padding:0 8px;
+  font-size:12px;
+  width:160px;
 }
 
 /* ===== v3.7 新导出弹窗 ===== */
@@ -247,7 +267,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
   <div class="title">
     <div class="logo"></div><h1>天道扫码 v3.7</h1>
     <span class="pill">本地运行 / GitHub Pages 可用</span>
-    <span class="right">UPS/FedEx 自动识别 · FedEx 尾 12 位 · SN 去重纠错 · 标签管理 · 新汇总按标签导出</span>
+    <span class="right">UPS/FedEx 自动识别 · FedEx 尾 12 位 · SN 去重纠错 · 标签管理 · 时间范围汇总 + 按标签导出</span>
   </div>
 
   <div class="tabs">
@@ -262,7 +282,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
   <!-- 运单 -->
   <section id="panel-tracking" class="panel">
     <div class="head">
-      <h2>运单登记（UPS / FedEx 自动识别；FedEx 保存尾 12 位；错误+重复语音提示）</h2>
+      <h2>运单登记（UPS / FedEx 自动识别；FedEx 保存尾 12 位；错误+重复中文播报）</h2>
       <div class="flex">
         <button class="btn sm" id="tExport">导出全部运单 CSV</button>
         <label class="btn sm acc" for="tImport">导入CSV</label>
@@ -329,7 +349,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
       <input id="d_capacity" placeholder="Capacity（SKU 自动填）"/>
       <input id="d_color" placeholder="Color（SKU 自动填）"/>
       <div class="full" style="display:flex;gap:8px;align-items:center;color:#9fb0c7;padding-top:0">
-        <span>提示：SN 非 11 位或包含非法字符 → 红闪 + 语音“序列号错误”，停止保存；SN 重复可选阻止；UPC 重复仅警告不阻止。</span>
+        <span>提示：SN 非 11 位或包含非法字符 → 红闪 + 蜂鸣 + 中文播报“序列号错误”；SN 重复可选阻止；UPC 重复仅警告不阻止。</span>
       </div>
     </div>
     <div class="stat">
@@ -363,33 +383,41 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
     </div>
   </section>
 
-  <!-- 汇总 / 明细 v3.7 -->
+  <!-- 汇总 / 明细（时间范围 + 按标签导出） -->
   <section id="panel-summary" class="panel hidden">
     <div class="head">
-      <h2>汇总 / 明细（按日期 · 按标签）</h2>
+      <h2>汇总 / 明细（按时间范围 · 按标签）</h2>
       <div class="flex">
-        <span style="font-size:12px;color:#9ca3af;">工作日期：</span>
-        <input type="date" id="sumDate" style="height:28px;border-radius:8px;border:1px solid #273549;background:#020617;color:#e5e7eb;padding:0 8px;font-size:12px"/>
         <button class="btn sm acc" id="btnExportByTag">按标签导出 CSV</button>
       </div>
     </div>
 
+    <!-- 时间范围筛选：dd/MM/yyyy HH:mm -->
+    <div class="summary-time-row">
+      <span>起始时间（dd/MM/yyyy HH:mm）：</span>
+      <input type="text" id="sumFrom" placeholder="25/11/2025 00:00"/>
+      <span>结束时间：</span>
+      <input type="text" id="sumTo" placeholder="25/11/2025 23:59"/>
+      <button class="btn sm" id="sumApply">应用筛选</button>
+      <span style="color:#9ca3af;">提示：留空 = 不限制，对全部历史数据汇总</span>
+    </div>
+
     <div class="stat">
       <div class="card">
-        <div class="k">当日运单数量</div>
+        <div class="k">筛选范围运单数量</div>
         <div class="v" id="sumWaybillCount">0</div>
       </div>
       <div class="card">
-        <div class="k">当日设备数量</div>
+        <div class="k">筛选范围设备数量</div>
         <div class="v" id="sumDeviceCount">0</div>
       </div>
       <div class="card">
-        <div class="k">当日标签数</div>
+        <div class="k">筛选范围标签数</div>
         <div class="v" id="sumTagCount">0</div>
       </div>
       <div class="card">
         <div class="k">说明</div>
-        <div class="v" style="font-size:12px;">仅统计所选日期的 DB.tracking / DB.device</div>
+        <div class="v" style="font-size:12px;">统计当前时间范围内 DB.tracking / DB.device 的真实 created_at 时间</div>
       </div>
     </div>
 
@@ -483,7 +511,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
         <input type="checkbox" id="setFedTail"> FedEx 运单只保留后 12 位
       </label>
       <label class="full" style="display:flex;gap:10px;align-items:center">
-        <input type="checkbox" id="setVoice"> 启用中文语音提示（错误时播报）
+        <input type="checkbox" id="setVoice"> 启用中文语音提示（错误/重复时播报）
       </label>
       <label class="full" style="display:flex;gap:10px;align-items:center">
         <input type="checkbox" id="setBeep"> 启用提示音（成功/警告）
@@ -506,14 +534,14 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 
 <datalist id="tagList"></datalist>
 
-<!-- 新导出弹窗 -->
+<!-- 新导出弹窗：点击空白区域 / × / 取消 都可以关闭 -->
 <div id="exportOverlay"
      class="export-overlay hidden"
      onclick="if(event.target===this) closeExportByTag();">
   <div class="export-modal">
     <div class="export-header">
       <div class="export-title">按标签导出 CSV</div>
-      <div class="export-date">日期：<span id="exportDateText"></span></div>
+      <div class="export-date">时间范围：<span id="exportDateText"></span></div>
       <button class="export-close" id="exportCloseBtn"
               onclick="closeExportByTag();">×</button>
     </div>
@@ -595,30 +623,17 @@ function speakTextZh(text){
   u.lang='zh-CN';
   window.speechSynthesis.speak(u);
 }
-
-function playVoice(kind, fallbackText){
+function playVoice(kind){
   if(!DB.settings.voice) return;
-  let text='';
-  switch(kind){
-    case 'trackingErr':
-      text='运单号错误';
-      break;
-    case 'dupTracking':
-      text='运单号重复，未保存';
-      break;
-    case 'serialErr':
-      text='序列号错误';
-      break;
-    case 'dupSerial':
-      text='序列号重复';
-      break;
-    default:
-      text='';
-  }
-  if(text) speakTextZh(text);
+  const map={
+    trackingErr:'运单号格式错误',
+    dupTracking:'运单号重复，未保存',
+    serialErr:'序列号格式错误',
+    dupSerial:'序列号重复'
+  };
+  const txt=map[kind];
+  if(txt) speakTextZh(txt);
 }
-
-/* 高亮闪烁 */
 function flash(node, cls){
   node.classList.remove('warn','err'); void node.offsetWidth;
   node.classList.add(cls); setTimeout(()=>node.classList.remove(cls),700);
@@ -639,7 +654,7 @@ document.querySelectorAll('.tab').forEach(t=>{
   });
 });
 
-/* ===== FedEx / UPS 识别 ===== */
+/* ===== 运单识别（UPS / FedEx） ===== */
 function normalizeTracking(raw, forceType){
   let s=(raw||'').toUpperCase().trim().replace(/\s+/g,'');
   let type='Unknown';
@@ -713,14 +728,14 @@ function addTracking(raw, fromAuto=false){
   if(!tracking || !validTracking(tracking,type)){
     flash(tInput,'err');
     beep('bad');
-    playVoice('trackingErr','');
+    playVoice('trackingErr');
     return;
   }
   const dup=DB.tracking.some(x=>x.tracking===tracking);
   if(dup){
     flash(tInput,'err');
     beep('bad');
-    playVoice('dupTracking','');
+    playVoice('dupTracking');
     return;
   }
   const tag=tTag.value.trim();
@@ -813,7 +828,7 @@ function addDevice(fromAuto){
   if(serial && !isValidSerial(serial)){
     flash(dSerial,'err');
     beep('bad');
-    playVoice('serialErr','');
+    playVoice('serialErr');
     return;
   }
   if(serial){
@@ -821,7 +836,7 @@ function addDevice(fromAuto){
     if(dup){
       flash(dSerial,'err');
       beep('bad');
-      playVoice('dupSerial','');
+      playVoice('dupSerial');
       if(DB.settings.blockDupSN) return;
     }
   }
@@ -895,17 +910,94 @@ function renderDevice(){
   });
 }
 
-/* ===== 汇总 / 明细 v3.7 ===== */
-function getSummaryDate(){
-  const input=$('#sumDate');
-  return input && input.value ? input.value : '';
+/* ===== 时间解析：记录 created_at → 时间戳；筛选框 dd/MM/yyyy HH:mm → 时间戳 ===== */
+function parseCreatedAtToTs(s){
+  if(!s) return null;
+  const m=s.match(/(\d{4}).*?(\d{1,2}).*?(\d{1,2}).*?(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if(!m) return null;
+  const y=parseInt(m[1],10);
+  const mo=parseInt(m[2],10)-1;
+  const d=parseInt(m[3],10);
+  const h=parseInt(m[4],10);
+  const mi=parseInt(m[5],10);
+  const se=m[6]!=null?parseInt(m[6],10):0;
+  return new Date(y,mo,d,h,mi,se).getTime();
 }
+function parseFilterDateTime(str,isEnd){
+  if(!str) return null;
+  const s=str.trim();
+  const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?$/);
+  if(!m) return null;
+  const d=parseInt(m[1],10);
+  const mo=parseInt(m[2],10)-1;
+  const y=parseInt(m[3],10);
+  let h,mi,se;
+  if(m[4]!=null){
+    h=parseInt(m[4],10);
+    mi=parseInt(m[5]||'0',10);
+    se=0;
+  }else{
+    if(isEnd){ h=23; mi=59; se=59; }
+    else{ h=0; mi=0; se=0; }
+  }
+  return new Date(y,mo,d,h,mi,se).getTime();
+}
+function formatDMYHM(dt){
+  const dd=String(dt.getDate()).padStart(2,'0');
+  const mm=String(dt.getMonth()+1).padStart(2,'0');
+  const yy=dt.getFullYear();
+  const hh=String(dt.getHours()).padStart(2,'0');
+  const mi=String(dt.getMinutes()).padStart(2,'0');
+  return `${dd}/${mm}/${yy} ${hh}:${mi}`;
+}
+function getRecordTs(rec){
+  if(rec._ts!=null) return rec._ts;
+  let ts=null;
+  if(rec.created_at){
+    ts=parseCreatedAtToTs(rec.created_at);
+  }
+  if(ts==null && rec.created_date && /^\d{4}-\d{2}-\d{2}$/.test(rec.created_date)){
+    ts=new Date(rec.created_date+'T00:00:00').getTime();
+  }
+  rec._ts=ts;
+  return ts;
+}
+function getSummaryRange(){
+  const fromInput=$('#sumFrom');
+  const toInput=$('#sumTo');
+  const fromStr=fromInput?fromInput.value.trim():'';
+  const toStr=toInput?toInput.value.trim():'';
+  const fromTs=fromStr?parseFilterDateTime(fromStr,false):null;
+  const toTs=toStr?parseFilterDateTime(toStr,true):null;
+  return {fromTs,toTs,fromStr,toStr};
+}
+function passRangeFilter(rec,range){
+  const ts=getRecordTs(rec);
+  const {fromTs,toTs}=range;
+  if(ts==null){
+    if(!fromTs && !toTs) return true;
+    return false;
+  }
+  if(fromTs && ts<fromTs) return false;
+  if(toTs && ts>toTs) return false;
+  return true;
+}
+function buildRangeText(range){
+  if(range.fromStr || range.toStr){
+    return (range.fromStr || '开始') + ' ~ ' + (range.toStr || '结束');
+  }
+  return '全部时间';
+}
+
+/* ===== 汇总 / 明细：按时间范围 + 标签 ===== */
 function renderSummary(){
-  const date=getSummaryDate();
-  const dayT=DB.tracking.filter(r=>!date || r.created_date===date);
-  const dayD=DB.device.filter(r=>!date || r.created_date===date);
-  $('#sumWaybillCount').textContent=dayT.length;
-  $('#sumDeviceCount').textContent=dayD.length;
+  const range=getSummaryRange();
+  const filteredT=DB.tracking.filter(r=>passRangeFilter(r,range));
+  const filteredD=DB.device.filter(r=>passRangeFilter(r,range));
+
+  $('#sumWaybillCount').textContent=filteredT.length;
+  $('#sumDeviceCount').textContent=filteredD.length;
+
   const map=new Map();
   function addTag(tag,kind){
     const key=(tag && tag.trim()) || '(未填标签)';
@@ -913,23 +1005,27 @@ function renderSummary(){
     const obj=map.get(key);
     if(kind==='t') obj.t++; else obj.d++;
   }
-  dayT.forEach(r=>addTag(r.tag,'t'));
-  dayD.forEach(r=>addTag(r.tag,'d'));
+  filteredT.forEach(r=>addTag(r.tag,'t'));
+  filteredD.forEach(r=>addTag(r.tag,'d'));
+
   const tbody=$('#summaryByTagBody');
   tbody.innerHTML='';
   const tags=[...map.keys()].sort((a,b)=>a.localeCompare(b,'zh-CN'));
   $('#sumTagCount').textContent=tags.length;
+
   if(tags.length===0){
     const tr=document.createElement('tr');
+    tr.className='sum-row';
     const td=document.createElement('td');
     td.colSpan=3;
     td.style.fontSize='12px';
     td.style.color='#9ca3af';
-    td.textContent=date ? '该日期暂无数据' : '暂无数据';
+    td.textContent=(range.fromTs || range.toTs)?'当前时间范围暂无数据':'暂无数据';
     tr.appendChild(td);
     tbody.appendChild(tr);
     return;
   }
+
   tags.forEach(tag=>{
     const rec=map.get(tag);
     const tr=document.createElement('tr');
@@ -941,35 +1037,34 @@ function renderSummary(){
     tbody.appendChild(tr);
   });
 }
+$('#sumApply').onclick=()=>renderSummary();
 
-/* 导出弹窗：按标签导出 */
+/* ===== 导出弹窗：按标签 + 时间范围 ===== */
 function openExportByTag(){
-  const date=getSummaryDate();
-  if(!date){
-    alert('请先选择日期'); return;
-  }
-  $('#exportDateText').textContent=date;
-  buildExportTagLists(date);
+  const range=getSummaryRange();
+  $('#exportDateText').textContent=buildRangeText(range);
+  buildExportTagLists(range);
   $('#exportOverlay').classList.remove('hidden');
 }
 function closeExportByTag(){
   $('#exportOverlay').classList.add('hidden');
 }
-function buildExportTagLists(date){
+function buildExportTagLists(range){
   const wWrap=$('#waybillTagList');
   const dWrap=$('#deviceTagList');
   wWrap.innerHTML='';
   dWrap.innerHTML='';
-  const dayT=DB.tracking.filter(r=>r.created_date===date);
-  const dayD=DB.device.filter(r=>r.created_date===date);
-  const tTags=[...new Set(dayT.map(r=>(r.tag||'').trim()).filter(Boolean))]
+  const filteredT=DB.tracking.filter(r=>passRangeFilter(r,range));
+  const filteredD=DB.device.filter(r=>passRangeFilter(r,range));
+  const tTags=[...new Set(filteredT.map(r=>(r.tag||'').trim()).filter(Boolean))]
     .sort((a,b)=>a.localeCompare(b,'zh-CN'));
-  const dTags=[...new Set(dayD.map(r=>(r.tag||'').trim()).filter(Boolean))]
+  const dTags=[...new Set(filteredD.map(r=>(r.tag||'').trim()).filter(Boolean))]
     .sort((a,b)=>a.localeCompare(b,'zh-CN'));
+
   if(!tTags.length){
     const div=document.createElement('div');
     div.className='export-empty';
-    div.textContent='当前日期无运单标签';
+    div.textContent='当前时间范围无运单标签';
     wWrap.appendChild(div);
   }else{
     tTags.forEach(tag=>wWrap.appendChild(createExportTagItem(tag,'tracking')));
@@ -977,7 +1072,7 @@ function buildExportTagLists(date){
   if(!dTags.length){
     const div=document.createElement('div');
     div.className='export-empty';
-    div.textContent='当前日期无设备标签';
+    div.textContent='当前时间范围无设备标签';
     dWrap.appendChild(div);
   }else{
     dTags.forEach(tag=>dWrap.appendChild(createExportTagItem(tag,'device')));
@@ -1015,44 +1110,53 @@ function getSelectedExportTags(type){
     .map(i=>i.dataset.label);
 }
 function exportTrackingByTag(){
-  const date=getSummaryDate();
-  if(!date){ alert('请先选择日期'); return; }
+  const range=getSummaryRange();
   const tags=getSelectedExportTags('tracking');
-  const data=DB.tracking.filter(r=>{
-    if(r.created_date!==date) return false;
+  const all=DB.tracking.filter(r=>passRangeFilter(r,range));
+  const data=all.filter(r=>{
     if(!tags.length) return true;
     return tags.includes(r.tag||'');
   });
   if(!data.length){
-    alert('当前日期下所选标签没有运单数据'); return;
+    alert('当前时间范围下所选标签没有运单数据'); return;
   }
-  const rows=[['日期','运单号','客户标签','备注']];
+  const rows=[['日期','时间','运单号','客户标签','备注']];
   data.forEach(r=>{
+    const ts=r.created_at||'';
+    // 从 created_at 分出日期和时间
+    let datePart='', timePart='';
+    const m=ts.match(/(\d{4}.*\d{1,2}.*\d{1,2}).*?(\d{1,2}:\d{2}:\d{2}|\d{1,2}:\d{2})/);
+    if(m){ datePart=m[1]; timePart=m[2]; }
     rows.push([
-      r.created_date||'',
+      r.created_date||datePart,
+      timePart,
       r.tracking||'',
       r.tag||'',
       r.note||''
     ]);
   });
-  downloadCSV('tracking_'+date,rows);
+  downloadCSV('tracking_range',rows);
 }
 function exportDeviceByTag(){
-  const date=getSummaryDate();
-  if(!date){ alert('请先选择日期'); return; }
+  const range=getSummaryRange();
   const tags=getSelectedExportTags('device');
-  const data=DB.device.filter(r=>{
-    if(r.created_date!==date) return false;
+  const all=DB.device.filter(r=>passRangeFilter(r,range));
+  const data=all.filter(r=>{
     if(!tags.length) return true;
     return tags.includes(r.tag||'');
   });
   if(!data.length){
-    alert('当前日期下所选标签没有设备数据'); return;
+    alert('当前时间范围下所选标签没有设备数据'); return;
   }
-  const rows=[['日期','序列号','UPC','Device','颜色','容量','标签','状态']];
+  const rows=[['日期','时间','序列号','UPC','Device','颜色','容量','标签','状态']];
   data.forEach(r=>{
+    const ts=r.created_at||'';
+    let datePart='', timePart='';
+    const m=ts.match(/(\d{4}.*\d{1,2}.*\d{1,2}).*?(\d{1,2}:\d{2}:\d{2}|\d{1,2}:\d{2})/);
+    if(m){ datePart=m[1]; timePart=m[2]; }
     rows.push([
-      r.created_date||'',
+      r.created_date||datePart,
+      timePart,
       r.serial||'',
       r.upc||'',
       r.device||'',
@@ -1062,7 +1166,7 @@ function exportDeviceByTag(){
       r.status||''
     ]);
   });
-  downloadCSV('device_'+date,rows);
+  downloadCSV('device_range',rows);
 }
 
 /* ===== SKU 模块 ===== */
@@ -1312,24 +1416,24 @@ renderSKU();
 renderTags();
 loadSettingsUI();
 
-// 汇总日期默认今天
-const sumDateInput=$('#sumDate');
-if(sumDateInput){
-  sumDateInput.value=new Date().toISOString().slice(0,10);
-  sumDateInput.addEventListener('change',renderSummary);
-}
+// 初始化汇总筛选为“今天 00:00 ~ 现在”
+(function initSummaryRange(){
+  const fromInput=$('#sumFrom');
+  const toInput=$('#sumTo');
+  if(!fromInput || !toInput) return;
+  const now=new Date();
+  const start=new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0);
+  fromInput.value=formatDMYHM(start);
+  toInput.value=formatDMYHM(now);
+})();
 renderSummary();
 
-// 绑定导出相关事件
-(function bindExportEvents(){
-  const b1=$('#btnExportByTag');        if(b1) b1.onclick=openExportByTag;
-  const b2=$('#btnExportCancel');      if(b2) b2.onclick=closeExportByTag;
-  const b3=$('#exportCloseBtn');       if(b3) b3.onclick=closeExportByTag;
-  const b4=$('#btnExportWaybillCSV');  if(b4) b4.onclick=exportTrackingByTag;
-  const b5=$('#btnExportDeviceCSV');   if(b5) b5.onclick=exportDeviceByTag;
-})();
+// 绑定导出按钮
+const b1=$('#btnExportByTag');       if(b1) b1.onclick=openExportByTag;
+const b4=$('#btnExportWaybillCSV');  if(b4) b4.onclick=exportTrackingByTag;
+const b5=$('#btnExportDeviceCSV');   if(b5) b5.onclick=exportDeviceByTag;
 
-// Esc 关闭弹窗
+// ESC 关闭导出弹窗
 document.addEventListener('keydown',e=>{
   const ov=$('#exportOverlay');
   if(e.key==='Escape' && ov && !ov.classList.contains('hidden')){
