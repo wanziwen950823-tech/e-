@@ -534,16 +534,13 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
 
 <datalist id="tagList"></datalist>
 
-<!-- 新导出弹窗：点击空白区域 / × / 取消 都可以关闭 -->
-<div id="exportOverlay"
-     class="export-overlay hidden"
-     onclick="if(event.target===this) closeExportByTag();">
+<!-- 新导出弹窗：统一用 JS 绑定关闭逻辑 -->
+<div id="exportOverlay" class="export-overlay hidden">
   <div class="export-modal">
     <div class="export-header">
       <div class="export-title">按标签导出 CSV</div>
       <div class="export-date">时间范围：<span id="exportDateText"></span></div>
-      <button class="export-close" id="exportCloseBtn"
-              onclick="closeExportByTag();">×</button>
+      <button class="export-close" id="exportCloseBtn">×</button>
     </div>
     <div class="export-body">
       <div class="export-column">
@@ -561,8 +558,7 @@ tbody td{padding:8px 8px;border-top:1px solid #1e2a40;border-bottom:1px solid #1
         设备标签 <span id="countDevice">0</span> 个
       </div>
       <div class="export-footer-buttons">
-        <button class="btn sm" id="btnExportCancel"
-                onclick="closeExportByTag();">取消</button>
+        <button class="btn sm" id="btnExportCancel">取消</button>
         <button class="btn sm acc" id="btnExportWaybillCSV">导出运单 CSV</button>
         <button class="btn sm acc" id="btnExportDeviceCSV">导出设备 CSV</button>
       </div>
@@ -598,7 +594,15 @@ function save(){ localStorage.setItem(storeKey,JSON.stringify(DB)); }
 
 /* ===== 工具函数 ===== */
 const $=s=>document.querySelector(s);
-const el=(t,a={},h='')=>{const n=document.createElement(t);for(const k in a){k==='class'?n.className=a[k]:n.setAttribute(k,a[k])}if(h)n.innerHTML=h;return n;}
+const el=(t,a={},h='')=>{
+  const n=document.createElement(t);
+  for(const k in a){
+    if(k==='class') n.className=a[k];
+    else n.setAttribute(k,a[k]);
+  }
+  if(h) n.innerHTML=h;
+  return n;
+};
 function nowPair(){
   const dt=new Date();
   return {
@@ -910,7 +914,7 @@ function renderDevice(){
   });
 }
 
-/* ===== 时间解析：记录 created_at → 时间戳；筛选框 dd/MM/yyyy HH:mm → 时间戳 ===== */
+/* ===== 时间解析 ===== */
 function parseCreatedAtToTs(s){
   if(!s) return null;
   const m=s.match(/(\d{4}).*?(\d{1,2}).*?(\d{1,2}).*?(\d{1,2}):(\d{2})(?::(\d{2}))?/);
@@ -1020,7 +1024,8 @@ function renderSummary(){
     td.colSpan=3;
     td.style.fontSize='12px';
     td.style.color='#9ca3af';
-    td.textContent=(range.fromTs || range.toTs)?'当前时间范围暂无数据':'暂无数据';
+    const r=getSummaryRange();
+    td.textContent=(r.fromStr || r.toStr)?'当前时间范围暂无数据':'暂无数据';
     tr.appendChild(td);
     tbody.appendChild(tr);
     return;
@@ -1042,13 +1047,20 @@ $('#sumApply').onclick=()=>renderSummary();
 /* ===== 导出弹窗：按标签 + 时间范围 ===== */
 function openExportByTag(){
   const range=getSummaryRange();
-  $('#exportDateText').textContent=buildRangeText(range);
+  const dateText=document.getElementById('exportDateText');
+  if(dateText) dateText.textContent=buildRangeText(range);
   buildExportTagLists(range);
-  $('#exportOverlay').classList.remove('hidden');
+
+  const ov=document.getElementById('exportOverlay');
+  if(ov) ov.classList.remove('hidden');
 }
 function closeExportByTag(){
-  $('#exportOverlay').classList.add('hidden');
+  const ov=document.getElementById('exportOverlay');
+  if(ov) ov.classList.add('hidden');
 }
+window.openExportByTag=openExportByTag;
+window.closeExportByTag=closeExportByTag;
+
 function buildExportTagLists(range){
   const wWrap=$('#waybillTagList');
   const dWrap=$('#deviceTagList');
@@ -1123,7 +1135,6 @@ function exportTrackingByTag(){
   const rows=[['日期','时间','运单号','客户标签','备注']];
   data.forEach(r=>{
     const ts=r.created_at||'';
-    // 从 created_at 分出日期和时间
     let datePart='', timePart='';
     const m=ts.match(/(\d{4}.*\d{1,2}.*\d{1,2}).*?(\d{1,2}:\d{2}:\d{2}|\d{1,2}:\d{2})/);
     if(m){ datePart=m[1]; timePart=m[2]; }
@@ -1210,7 +1221,7 @@ $('#skuPasteBtn').onclick=()=>{
   save(); renderSKU(); beep('ok');
 };
 $('#skuExport').onclick=()=>{
-  const rows=[['upc','device','capacity','color']];
+  const rows=[['upc','device','capacity','color']]:
   Object.entries(DB.sku).forEach(([u,v])=>{
     rows.push([u,v.device||'',v.capacity||'',v.color||'']);
   });
@@ -1428,14 +1439,39 @@ loadSettingsUI();
 })();
 renderSummary();
 
-// 绑定导出按钮
-const b1=$('#btnExportByTag');       if(b1) b1.onclick=openExportByTag;
-const b4=$('#btnExportWaybillCSV');  if(b4) b4.onclick=exportTrackingByTag;
-const b5=$('#btnExportDeviceCSV');   if(b5) b5.onclick=exportDeviceByTag;
+// 绑定导出弹窗相关按钮
+const btnExportByTag=$('#btnExportByTag');
+if(btnExportByTag) btnExportByTag.addEventListener('click',openExportByTag);
+
+const btnExportWaybill=$('#btnExportWaybillCSV');
+if(btnExportWaybill) btnExportWaybill.addEventListener('click',exportTrackingByTag);
+
+const btnExportDevice=$('#btnExportDeviceCSV');
+if(btnExportDevice) btnExportDevice.addEventListener('click',exportDeviceByTag);
+
+const btnExportCancel=$('#btnExportCancel');
+if(btnExportCancel) btnExportCancel.addEventListener('click',e=>{
+  e.preventDefault();
+  closeExportByTag();
+});
+
+const btnExportClose=$('#exportCloseBtn');
+if(btnExportClose) btnExportClose.addEventListener('click',e=>{
+  e.preventDefault();
+  closeExportByTag();
+});
+
+// 点击遮罩空白区域关闭
+const exportOverlay=document.getElementById('exportOverlay');
+if(exportOverlay){
+  exportOverlay.addEventListener('click',e=>{
+    if(e.target===exportOverlay) closeExportByTag();
+  });
+}
 
 // ESC 关闭导出弹窗
 document.addEventListener('keydown',e=>{
-  const ov=$('#exportOverlay');
+  const ov=document.getElementById('exportOverlay');
   if(e.key==='Escape' && ov && !ov.classList.contains('hidden')){
     closeExportByTag();
   }
